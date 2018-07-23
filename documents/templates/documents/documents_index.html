@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h2>Liste des documents</h2>
+<a href="{% url 'documents:create' %}" class="btn btn-primary"><i class="fa fa-star"></i> Ajouter un nouveau document</a> <a href="{% url 'homeTextEdit' %}" class="btn btn-info"><i class="fa fa-pencil-alt"></i> Modifier le texte d'accueil</a>
+<br>
+<br>
+<div class="table-responsive">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Nom</th>
+				<th>Document</th>
+				<th>Description</th>
+				<th>Actif</th>
+				<th>Administration</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for document in documents %}
+			<tr>
+				<td>{{document.name}}</td>
+				<td><a href="{{document.document.url}}">{{document.document}}</a></td>
+				<td>{{document.description}}</td>
+				<td><i class="fa fa-{{document.active | yesno:"check-circle,times-circle"}}"></i></td>
+				<td><a href="{% url 'documents:switchActive' document.pk %}" class="btn btn-sm btn-info"><i class="fa fa-{{document.active | yesno:"times-circle,check-circle"}}"></i> Passer en {{document.active | yesno:"inactif,actif"}}</a> <a href="{% url 'documents:edit' document.pk %}" class="btn btn-sm btn-primary"><i class="fa fa-pencil-alt"></i> Modifier</a> <a href="{% url 'documents:delete' document.pk %}" class="btn btn-sm btn-danger"><i class="fa fa-trash"></i> Supprimer</a></td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

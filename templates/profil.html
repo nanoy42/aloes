@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block content %}
+<h2>Mon compte</h2>
+<h3>Informations</h3>
+Nom : {{request.user.last_name}}<br>
+Prénom : {{request.user.first_name}}<br>
+Nom d'utilisateur : {{request.user.username}}<br>
+Adresse mail : {{request.user.email}}<br>
+Inscription : {{request.user.date_joined}}<br>
+<hr>
+<h3>Changer mon mot de passe</h3>
+<form method="post">
+	{% csrf_token %}
+	{% bootstrap_form form %}
+	<button type="submit" class="btn btn-primary"><i class="fa fa-lock"></i> Changer mon mot de passe</button>
+</form>
+{% endblock %}

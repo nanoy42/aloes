@@ -1,0 +1,64 @@
+{% load bootstrap4 %}
+{% load static %}
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8">
+		<title>{% block title %}Gestion d'ALOES{% endblock %}</title>
+		<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
+		<link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}" />
+		<link rel="stylesheet" href="{% static 'jquery-ui/jquery-ui.min.css' %}" />
+		<script src="{% static 'js/jquery.js' %}"></script>
+		<script src="{% static 'js/popper.js' %}"></script>
+		<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+		<script src="{% static 'jquery-ui/jquery-ui.min.js' %}"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	</head>
+	<body>
+		{% block navbar %}
+		{% include 'navbar.html' %}
+		{% endblock %}
+		{% if sidebar %}
+		<div class="row" style="width:100vw; overflow-x:hidden">
+			<div class="col-2 sidebar bg-faded border-right" style="position:fixed; margin-left:1%">
+				<div style="height:100vh; overflow-y:scroll">
+					<br><br><br>
+					{% include 'search.html' %}
+				</div>
+			</div>
+			{% endif %}
+			<div {% if sidebar %}class="col-10 offset-md-2"{% else %} class="col-12" {% endif %}>
+				<div class="container">
+					<br><br><br>
+					{% for message in messages %}
+					<div class="alert alert-{{ message.tags }} alert-dismissible fade show">{{ message }}
+						<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					{% endfor %}
+					{% block content %}
+
+					{% endblock %}
+				</div>
+			</div>
+		</div>
+		<script>
+			$(document).ready(function(){
+				$.datepicker.setDefaults({
+					dayNamesShort: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+					dayNamesMin: ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"],
+					monthNames: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Decembre"],
+					monthNamesShort: ["Jan", "Fev", "Mar", "Avr", "Mai", "Jui", "Juil", "Aoû", "Sep", "Oct", "Nov", "Dec"],
+					changeMonth:true,
+					changeYear:true,
+					firstDay:1,
+					showButtonPanel:true,
+					closeText:"Fini",
+					currentText:"Aujourd'hui",
+					dateFormat:"dd/mm/yy"
+				});
+			});
+		</script>
+	</body>
+</html>

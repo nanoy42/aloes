@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{delete_title}}</h2>
+<form method="post">
+	{% csrf_token %}
+	<p>Etes vous sur de vouloir supprimer {{delete_object}} "{{ object }}" ? Cette action est irréversible</p>
+	<button class="btn btn-danger btn-sm" type="submit"><i class="fa fa-trash"></i> Supprimer</button> <a class="btn btn-primary btn-sm" href="{% url delete_link %}"><i class="fa fa-times"></i> Annuler</a>
+</form>
+{% endblock %}

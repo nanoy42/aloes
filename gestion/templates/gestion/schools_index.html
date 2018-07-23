@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Ecoles</h3>
+<br>
+<a href="{% url 'gestion:createSchool' %}" class="btn btn-primary"><i class="fa fa-star"></i> Créer une nouvelle école</a>
+<br><br>
+<div class="table-responsive">
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Nom de l'école</th>
+				<th>Nombre de locataires</th>
+				<th>Voir les chambres</th>
+				<th>Administration</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for school in schools %}
+			<tr>
+				<td>{{school.name}}</td>
+				<td>{{school.tenant_set.all.count}}</td>
+				<td><a href="#"><i class="fa fa-home"></i></a></td>
+				<td><a href="{% url 'gestion:editSchool' school.pk %}" class="btn btn-primary btn-sm"><i class="fa fa-pencil-alt"></i> Modifier</a> <a href="{% url 'gestion:deleteSchool' school.pk %}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Supprimer</a></td>
+			</tr>
+			{% endfor %}
+	</table>
+{% endblock %}

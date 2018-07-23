@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block content%}
+<h3>{{room}} (Lot {{room.lot}}) <span class="badge" style="color:white;background-color:{{room.renovation.color}}">{{room.renovation.name}}</span>
+</h3>
+<form method="post" action="">
+	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+		<button type="submit" class="btn btn-primary">Sauvegarder</button>
+		<a href="" class="btn btn-primary">Plan</a>
+		<div class="btn-group" role="group">
+			<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Actions
+			</button>
+			<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+				<a class="dropdown-item" href="#">Vider la chambre</a>
+				<a class="dropdown-item" href="#">Enménager le prochain locataire</a>
+				<div class="dropdown-divider"></div>
+				<a class="dropdown-item" href="#">Changer le plan</a>
+			</div>
+		</div>
+	</div>
+	<br><br>
+	{% csrf_token %}
+	<div class="row">
+		<div class="col">
+			<h3>Informations</h3>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field roomForm.room %}
+				</div>
+				<div class="col">
+					{% bootstrap_field roomForm.lot %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field roomForm.renovation %}
+				</div>
+				<div class="col">
+					{% bootstrap_field roomForm.rentType %}
+				</div>
+			</div>
+			<h3>Observations</h3>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field roomForm.observations %}
+				</div>
+			</div>
+		</div>
+		<div class="col">
+			<h3>Locataires</h3>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Locataire</th>
+						<th>Date d'entrée</th>
+						<th>Date de sortie</th>
+						<th>Dossier</th>
+					</tr>
+				</thead>
+				<tbdoy>
+				{% if room.nextTenant %}
+					<tr>
+						<td>
+							<a href="">{{room.nextTenant}}</a> (Prochain locataire)
+						</td>
+						<td>
+						</td>
+						<td>
+						</td>
+					</tr>
+				{% endif %}
+					<tr>
+						<td>
+							{% if room.tenant %}<a href="">{{room.tenant}}</a> (Locataire actuel){% else %}Chambre vide (<a href="">Enménager un locataire</a>){% endif %}
+						</td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					{% for leasing in leasings %}
+					<tr>
+						<td><a href="{% url 'gestion:tenantProfile' leasing.tenant.pk %}">{{leasing.tenant}}</a></td>
+						<td>{{leasing.date_of_entry|default:"?"}}</td>
+						<td>{{leasing.date_of_departure|default:"?"}}</td>
+						<td><a href="{% url 'gestion:leasingProfile' leasing.pk %}"><i class="fa fa-folder-open"></i></a></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+		</div>
+	</div>
+	</form>
+{% endblock %}

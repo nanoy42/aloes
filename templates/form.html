@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% load static %}
+{% block content %}
+{% if color %}<script src="{% static 'colorfield/jscolor/jscolor.js' %}"></script>{% endif %}
+<h2>{{form_title}}</h2>
+
+<form method="post" {% if file %} enctype="multipart/form-data"{% endif %}>
+	{% csrf_token %}
+	{% bootstrap_form form %}
+	<button type="submit" class="btn btn-primary"><i class="fa fa-{{form_icon}}"></i> {{form_button}}</button>
+</form>
+{% endblock %}

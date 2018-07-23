@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Loyers</h3>
+<br>
+<a href="{% url 'gestion:createRent' %}" class="btn btn-primary"><i class="fa fa-star"></i> Créer un nouveau loyer</a>
+<br><br>
+<div class="table-responsive">
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Nom</th>
+				<th>Loyer</th>
+				<th>Loyer 2</th>
+				<th>Suppléments</th>
+				<th>Charges</th>
+				<th>Frais de dossier</th>
+				<th>Surface</th>
+				<th>Nombre de chambres</th>
+				<th>Voir les chambres</th>
+				<th>Administration</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for rent in rents %}
+			<tr>
+				<td>{{rent.type}} €</td>
+				<td>{{rent.rent}} €</td>
+				<td>{{rent.rent2}} €</td>
+				<td>{{rent.supplements}} €</td>
+				<td>{{rent.charges}} €</td>
+				<td>{{rent.application_fee}} €</td>
+				<td>{{rent.surface}} m2</td>
+				<td>{{rent.room_set.all.count}}</td>
+				<td><a href="#"><i class="fa fa-home"></i></a></td>
+				<td><a href="{% url 'gestion:editRent' rent.pk %}" class="btn btn-primary btn-sm"><i class="fa fa-pencil-alt"></i> Modifier</a> <a href="{% url 'gestion:deleteRent' rent.pk %}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Supprimer</a></td>
+			</tr>
+			{% endfor %}
+	</table>
+{% endblock %}

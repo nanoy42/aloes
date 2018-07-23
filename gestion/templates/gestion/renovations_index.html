@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Niveaux de rénovation</h3>
+<br>
+<a href="{% url 'gestion:createRenovation' %}" class="btn btn-primary"><i class="fa fa-star"></i> Créer un nouveau niveau de rénovation</a>
+<br><br>
+<div class="table-responsive">
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Niveau de rénovation</th>
+				<th>Description</th>
+				<th>Nombre de chambres</th>
+				<th>Voir les chambres</th>
+				<th>Administration</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for renovation in renovations %}
+			<tr>
+				<td><span class="badge" style="color:white;background-color:{{renovation.color}}">{{renovation.name}}</span></td>
+				<td>{{renovation.description}}</td>
+				<td>{{renovation.room_set.all.count}}</td>
+				<td><a href="#"><i class="fa fa-home"></i></a></td>
+				<td><a href="{% url 'gestion:editRenovation' renovation.pk %}" class="btn btn-primary btn-sm"><i class="fa fa-pencil-alt"></i> Modifier</a> <a href="{% url 'gestion:deleteRenovation' renovation.pk %}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Supprimer</a></td>
+			</tr>
+			{% endfor %}
+	</table>
+{% endblock %}

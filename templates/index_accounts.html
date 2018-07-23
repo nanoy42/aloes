@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Comptes</h3>
+<a class="btn btn-primary" href="{% url 'createUser' %}"><i class="fa fa-star"></i> Ajouter un compte</a>
+<br><br>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Nom</th>
+			<th>Prénom</th>
+			<th>Nom d'utilisateur</th>
+			<th>Adresse mail</th>
+			<th>Admin</th>
+			<th>Administration</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for user in users %}
+		<tr>
+			<td>{{ user.last_name }}</td>
+			<td>{{ user.first_name }}</td>
+			<td>{{ user.username}}</td>
+			<td>{{ user.email }}</td>
+			<td>{{ user.is_staff | yesno:"Oui,Non"}}</td>
+			<td>
+				<div class="btn-group">
+					<button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<i class="fa fa-wrench"></i> Administer
+					</button>
+					<div class="dropdown-menu">
+						{% if not user.is_staff %}<a class="dropdown-item" href="{% url 'adminRights' user.pk %}"><i class="fa fa-cogs"></i> Donner les droits admin</a>{% endif %}
+						<a class="dropdown-item" href="{% url 'resetPassword' user.pk %}"><i class="fa fa-lock"></i> Réinitialiser le mot de passe</a>
+						<a class="dropdown-item" href="{% url 'editUser' user.pk %}"><i class="fa fa-pencil-alt"></i> Modifier</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="{% url 'deleteUser' user.pk %}"><i class="fa fa-trash"></i> Supprimer</a>
+					</div>
+				</div>
+			</td>
+		</tr>
+		{% endfor %}
+{% endblock %}
