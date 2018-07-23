@@ -12,7 +12,7 @@ def gestionIndex(request):
     if search_form.is_valid():
         res = Room.objects
         if(search_form.cleaned_data['last_name']):
-            res = res.filter(actualTenant__last_name__icontains=search_form.cleaned_data['last_name'])
+            res = res.filter(actualTenant__name__icontains=search_form.cleaned_data['last_name'])
         if(search_form.cleaned_data['first_name']):
             res = res.filter(actualTenant__first_name__icontains=search_form.cleaned_data['first_name'])
         if(search_form.cleaned_data['name']):
