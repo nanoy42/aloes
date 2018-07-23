@@ -11,4 +11,4 @@ For installation, please consult the wiki pages.
 
 ## Contributing
 
-For contributing to this project, please read the [contributing][contributing] guide.
+For contributing to this project, please read the contributin guide.
