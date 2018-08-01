@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'documents',
     'aloes',
     'colorfield',
-    'django.contrib.admindocs',
 ]
 
 MIDDLEWARE = [
