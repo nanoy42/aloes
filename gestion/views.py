@@ -4,7 +4,7 @@ from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 
 from .models import Renovation, Tenant, Leasing, School, Rent, Room
-from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm
+from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm
 
 
 def gestionIndex(request):
@@ -331,3 +331,23 @@ def addOneYear(request):
     messages.success(request, "Tous les locataires ont été augmentés d'une année")
     next_url = request.GET.get('next', reverse('home'))
     return redirect(next_url)
+
+def leave(request, pk):
+    tenant = get_object_or_404(Tenant, pk=pk)
+    if(tenant.date_of_departure):
+        messages.error(request, "Le locataire a déjà quitté la résidence")
+        return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
+    leaveForm = LeaveForm(request.POST or None, instance=tenant)
+    message = "Vous vous apprêtez à faire quitter de la résidence " + str(tenant) + ". Pour continuer, indiquer la date officielle de départ de la résidence"
+    if(leaveForm.is_valid()):
+        leaveForm.save()
+        if(tenant.has_room):
+            leasing = get_object_or_404(Leasing, tenant = tenant, room = tenant.room)
+            leasing.date_of_departure = leaveForm.cleaned_data['date_of_departure']
+            leasing.save()
+            room = tenant.room
+            room.actualTenant = None
+            room.save()
+        messages.success(request, "Le locataire a bien quitté la résidence")
+        return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
+    return render(request, "form.html", {"form":leaveForm, "p":message, "form_title":"Faire quitter la résidence", "form_button":"Faire quitter la résidence", "form_icon":"sign-out-alt"})

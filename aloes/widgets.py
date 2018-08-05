@@ -9,6 +9,7 @@ class DatePicker(Input):
         template = get_template('datepicker.html')
         return template.render({
             'name': name,
+            'value': value,
             'attrs': flat_attrs,
             'id': attrs['id']
         })
