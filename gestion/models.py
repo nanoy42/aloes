@@ -82,6 +82,14 @@ class Tenant(models.Model):
         except:
             return False
 
+    @property
+    def has_next_room(self):
+        try:
+            nextRoom = self.nextRoom
+            return True
+        except:
+            return False
+
 class Room(models.Model):
     class Meta:
         verbose_name = "Chambre"

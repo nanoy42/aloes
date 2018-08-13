@@ -25,4 +25,5 @@ urlpatterns = [
     path('leasingProfile/<int:pk>', views.leasingProfile, name="leasingProfile"),
     path('addOneYear', views.addOneYear, name="addOneYear"),
     path('leave/<int:pk>', views.leave, name="leave"),
+    path('moveIn/<int:pk>', views.moveIn, name="moveIn"),
 ]

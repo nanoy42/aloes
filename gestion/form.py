@@ -93,3 +93,6 @@ class LeaveForm(forms.ModelForm):
         widgets = {
             'date_of_departure': DatePicker()
         }
+
+class MoveInForm(forms.Form):
+    date = forms.DateField(widget=DatePicker())
