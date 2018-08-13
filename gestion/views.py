@@ -4,7 +4,7 @@ from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 
 from .models import Renovation, Tenant, Leasing, School, Rent, Room
-from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, MoveInForm
+from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm
 
 
 def gestionIndex(request):
@@ -352,6 +352,24 @@ def leave(request, pk):
         return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
     return render(request, "form.html", {"form":leaveForm, "p":message, "form_title":"Faire quitter la résidence", "form_button":"Faire quitter la résidence", "form_icon":"sign-out-alt"})
 
+def moveOut(request, pk):
+    tenant = get_object_or_404(Tenant, pk=pk)
+    if(not tenant.has_room):
+        messages.error(request, "Le locataire n'est dans aucune chambre actuellement")
+        return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
+    moveOutForm = DateForm(request.POST or None)
+    message = "Veuillez indiquer la date de sortie officielle de la chambre " + str(tenant.room) + " pour " + str(tenant)
+    if(moveOutForm.is_valid()):
+        leasing = get_object_or_404(Leasing, tenant = tenant, room = tenant.room)
+        leasing.date_of_departure = moveOutForm.cleaned_data['date']
+        leasing.save()
+        room = tenant.room
+        room.actualTenant = None
+        room.save()
+        messages.success(request, "Le locataire a bien déménagé")
+        return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
+    return render(request, "form.html", {"form": moveOutForm, "p": message, "form_title": "Déménager " + str(tenant), "form_button": "Déménager", "form_icon": "sign-out-alt"})
+
 def moveIn(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(not tenant.has_next_room):
@@ -363,7 +381,7 @@ def moveIn(request, pk):
     elif(tenant.has_room):
         messages.error(request, "Ce locataire possède actuellement une chambre. Déménagez le ou utiliser la fonction emménagement-déménagement")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
-    moveInForm = MoveInForm(request.POST or None)
+    moveInForm = DateForm(request.POST or None)
     message = "Veuillez indiquer la date d'entrée officielle dans la chambre " + str(tenant.nextRoom) + " pour " + str(tenant)
     if(moveInForm.is_valid()):
         room = tenant.nextRoom
@@ -374,3 +392,4 @@ def moveIn(request, pk):
         leasing.save()
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     return render(request, "form.html", {"form": moveInForm, "p": message, "form_title": "Emménagement d'un locataire", "form_button": "Emménager", "form_icon": "sign-in-alt"})
+

@@ -26,4 +26,5 @@ urlpatterns = [
     path('addOneYear', views.addOneYear, name="addOneYear"),
     path('leave/<int:pk>', views.leave, name="leave"),
     path('moveIn/<int:pk>', views.moveIn, name="moveIn"),
+    path('moveOut/<int:pk>', views.moveOut, name="moveOut"),
 ]

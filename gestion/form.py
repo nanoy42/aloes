@@ -94,5 +94,5 @@ class LeaveForm(forms.ModelForm):
             'date_of_departure': DatePicker()
         }
 
-class MoveInForm(forms.Form):
-    date = forms.DateField(widget=DatePicker())
+class DateForm(forms.Form):
+    date = forms.DateField(widget=DatePicker(), required=True)
