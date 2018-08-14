@@ -74,6 +74,21 @@ class Tenant(models.Model):
             pre = "Mme"
         return pre + " " + self.first_name + " " + self.name
 
+    @property
+    def has_room(self):
+        try:
+            room = self.room
+            return True
+        except:
+            return False
+
+    @property
+    def has_next_room(self):
+        try:
+            nextRoom = self.nextRoom
+            return True
+        except:
+            return False
 
 class Room(models.Model):
     class Meta:

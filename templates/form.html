@@ -7,6 +7,7 @@
 
 <form method="post" {% if file %} enctype="multipart/form-data"{% endif %}>
 	{% csrf_token %}
+	<p>{{p}}</p>
 	{% bootstrap_form form %}
 	<button type="submit" class="btn btn-primary"><i class="fa fa-{{form_icon}}"></i> {{form_button}}</button>
 </form>

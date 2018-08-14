@@ -66,6 +66,10 @@ class TenantForm(forms.ModelForm):
     class Meta:
         model = Tenant
         fields = "__all__"
+        widgets = {
+            'date_of_entry': DatePicker(),
+            'date_of_departure': DatePicker(),
+        }
 
 class CreateRoomForm(forms.ModelForm):
     class Meta:
@@ -81,3 +85,14 @@ class LeasingForm(forms.ModelForm):
     class Meta:
         model = Leasing
         fields = "__all__"
+
+class LeaveForm(forms.ModelForm):
+    class Meta:
+        model = Tenant
+        fields = ('date_of_departure',)
+        widgets = {
+            'date_of_departure': DatePicker()
+        }
+
+class DateForm(forms.Form):
+    date = forms.DateField(widget=DatePicker(), required=True)

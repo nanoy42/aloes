@@ -23,5 +23,8 @@ urlpatterns = [
     path('roomProfile/<int:pk>', views.roomProfile, name="roomProfile"),
     path('createRoom', views.RoomCreate.as_view(), name="createRoom"),
     path('leasingProfile/<int:pk>', views.leasingProfile, name="leasingProfile"),
-    path('addOneYear', views.addOneYear, name="addOneYear")
+    path('addOneYear', views.addOneYear, name="addOneYear"),
+    path('leave/<int:pk>', views.leave, name="leave"),
+    path('moveIn/<int:pk>', views.moveIn, name="moveIn"),
+    path('moveOut/<int:pk>', views.moveOut, name="moveOut"),
 ]
