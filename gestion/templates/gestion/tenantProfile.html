@@ -115,32 +115,32 @@
 						<th>Chambre</th>
 						<th>Date d'entrée</th>
 						<th>Date de sortie</th>
+						<th>Dossier</th>
 					</tr>
 				</thead>
 				<tbdoy>
-				{% if tenant.nextRoom %}
 					<tr>
 						<td>
-							<a href="">{{tenant.nextRoom}}</a> (Prochaine chambre)
+							{% if nextLeasing %}<a href="{% url 'gestion:roomProfile' nextLeasing.room.pk %}">{{nextLeasing.room}}</a> (Prochaine chambre){% else %} Pas de prochaine chambre (<a href="#">Prévoir une prochaine chambre</a>){% endif %}
 						</td>
-						<td>
-						</td>
-						<td>
-						</td>
-					</tr>
-				{% endif %}
-					<tr>
-						<td>
-							{% if tenant.room is not None %}<a href="">{{tenant.room}}</a> (Chambre actuelle){% else %}Pas de chambre actuellement (<a href="">Attribuer une chambre</a>{% endif %}
-						</td>
-						<td>{% if previousRooms.count == 0 %}{{tenant.date_of_entry}}{% else %}lol{% endif %}</td>
 						<td></td>
+						<td></td>
+						<td>{% if nextLeasing %}<a href="{% url 'gestion:leasingProfile' nextLeasing.pk %}"><i class="fa fa-folder-open"></i>{% endif %}</td>
 					</tr>
-					{% for room in previousRooms %}
 					<tr>
-						<td><a href="">{{room.room}}</a></td>
-						<td>{{room.date_of_entry}}</td>
-						<td>{{room.date_of_departure}}</td>
+						<td>
+							{% if actualLeasing %}<a href="">{{actualLeasing.room}}</a> (Chambre actuelle){% else %}Pas de chambre actuellement (<a href="">Attribuer une chambre</a>{% endif %}
+						</td>
+						<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
+						<td></td>
+						<td>{% if actualLeasing %}<a href="{% url 'gestion:leasingProfile' actualLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
+					</tr>
+					{% for leasing in leasings %}
+					<tr>
+						<td><a href="{% url 'gestion:roomProfile' leasing.room.pk %}">{{leasing.room}}</a></td>
+						<td>{{leasing.date_of_entry}}</td>
+						<td>{{leasing.date_of_departure}}</td>
+						<td><a href="{% url 'gestion:leasingProfile' leasing.pk %}"><i class="fa fa-folder-open"></i></a></td>
 					</tr>
 					{% endfor %}
 				</tbody>

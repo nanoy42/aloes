@@ -253,11 +253,33 @@ def roomProfile(request, pk):
     search_form = SearchForm()
     room = get_object_or_404(Room, pk=pk)
     roomForm = RoomForm(request.POST or None, instance=room)
-    leasings = Leasing.objects.filter(room=room)
+    leasings = Leasing.objects.filter(room=room).order_by("-pk")
+    if(leasings.count() > 0 and leasings[0].tenant == room.nextTenant):
+        nextLeasing = leasings[0]
+        if(leasings.count() > 1):
+            leasings = leasings[1:]
+            if(leasings[0].tenant == room.actualTenant):
+                actualLeasing = leasings[0]
+                if(leasings.count() > 1):
+                    leasings = leasings[1:]
+                else:
+                    leasings = None
+        else:
+            leasings = None
+    elif(leasings.count() > 0 and leasings[0].tenant == room.actualTenant):
+        nextLeasing = None
+        actualLeasing = leasings[0]
+        if(leasings.count() > 1):
+            leasings = leasings[1:]
+        else:
+            leasings = None
+    else:
+        nextLeasing = None
+        actualLeasing = None
     if(roomForm.is_valid()):
         roomForm.save()
         messages.success(request, "Les modifications ont bien été enregistrées")
-    return render(request, "gestion/roomProfile.html", {"sidebar": True, "room": room, "search_form": search_form, "roomForm": roomForm, "leasings": leasings})
+    return render(request, "gestion/roomProfile.html", {"sidebar": True, "room": room, "search_form": search_form, "roomForm": roomForm, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
 
 class RoomCreate(CreateView):
     form_class = CreateRoomForm
@@ -284,11 +306,33 @@ def tenantProfile(request, pk):
     search_form = SearchForm()
     tenant = get_object_or_404(Tenant, pk=pk)
     tenantForm = TenantForm(request.POST or None, instance=tenant)
-    previousRooms = Leasing.objects.filter(tenant=tenant)
+    leasings = Leasing.objects.filter(tenant=tenant).order_by("-pk")
+    if(leasings.count() > 0 and tenant.has_next_room and leasings[0].room == tenant.nextRoom):
+        nextLeasing = leasings[0]
+        if(leasings.count() > 1):
+            leasings = leasings[1:]
+            if(tenant.has_room and leasings[0] == tenant.room):
+                actualLeasing = leasings[0]
+                if(leasings.count() > 1):
+                    leasings = leasings[1:]
+                else:
+                    leasings = None
+        else:
+            leasings = None
+    elif(leasings.count() > 0 and tenant.has_room and leasings[0].room == tenant.room):
+        nextLeasing = None
+        actualLeasing = leasings[0]
+        if(leasings.count() > 1):
+            leasings = leasings[1:]
+        else:
+            leasings = None
+    else:
+        actualLeasing = None
+        nextLeasing = None
     if(tenantForm.is_valid()):
         tenantForm.save()
         messages.success(request, "Les modifications ont été enregistrées")
-    return render(request, "gestion/tenantProfile.html", {"sidebar": True, "tenant": tenant, "tenantForm": tenantForm, "search_form": search_form, "previousRooms":previousRooms})
+    return render(request, "gestion/tenantProfile.html", {"sidebar": True, "tenant": tenant, "tenantForm": tenantForm, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
 
 class TenantCreate(CreateView):
     form_class = CreateTenantForm

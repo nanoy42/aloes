@@ -59,30 +59,27 @@
 					</tr>
 				</thead>
 				<tbdoy>
-				{% if room.nextTenant %}
 					<tr>
 						<td>
-							<a href="">{{room.nextTenant}}</a> (Prochain locataire)
+							{% if nextLeasing %}<a href="{% url 'gestion:tenantProfile' nextLeasing.tenant.pk %}">{{nextLeasing.tenant}}</a> (Prochain locataire){% else %}Pas de prochain locataire (<a href="#">prévoir un prochain locataire</a>){% endif %}
 						</td>
-						<td>
-						</td>
-						<td>
-						</td>
+						<td></td>
+						<td></td>
+						<td>{% if nextLeasing %}<a href="{% url 'gestion:leasingProfile' nextLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
 					</tr>
-				{% endif %}
 					<tr>
 						<td>
-							{% if room.tenant %}<a href="">{{room.tenant}}</a> (Locataire actuel){% else %}Chambre vide (<a href="">Enménager un locataire</a>){% endif %}
+							{% if actualLeasing %}<a href="{% url 'gestion:tenantProfile' actualLeasing.tenant.pk %}">{{actualLeasing.tenant}}</a> (Locataire actuel){% else %}Chambre vide (<a href="">Enménager un locataire</a>){% endif %}
 						</td>
+						<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
 						<td></td>
-						<td></td>
-						<td></td>
+						<td>{% if actualLeasing %}<a href="{% url 'gestion:leasingProfile' actualLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
 					</tr>
 					{% for leasing in leasings %}
 					<tr>
 						<td><a href="{% url 'gestion:tenantProfile' leasing.tenant.pk %}">{{leasing.tenant}}</a></td>
-						<td>{{leasing.date_of_entry|default:"?"}}</td>
-						<td>{{leasing.date_of_departure|default:"?"}}</td>
+						<td>{{leasing.date_of_entry}}</td>
+						<td>{{leasing.date_of_departure}}</td>
 						<td><a href="{% url 'gestion:leasingProfile' leasing.pk %}"><i class="fa fa-folder-open"></i></a></td>
 					</tr>
 					{% endfor %}
