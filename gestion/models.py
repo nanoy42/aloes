@@ -31,6 +31,16 @@ class Rent(models.Model):
     def __str__(self):
         return self.type + " (" + str(self.surface) + " m2)"
 
+class TenantManager(models.Manager):
+    def has_no_next_room(self):
+        ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.has_next_room]
+        return Tenant.objects.filter(id__in=ids)
+
+    def has_no_room(self):
+        ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.has_room]
+        return Tenant.objects.filter(id__in=ids)
+
+
 class Tenant(models.Model):
     class Meta:
         verbose_name = "Locataire"
@@ -67,6 +77,8 @@ class Tenant(models.Model):
     email = models.EmailField(verbose_name="Email", blank=True)
     phone = models.CharField(max_length=10, verbose_name="Téléphone fixe", blank=True)
 
+    objects = TenantManager()
+
     def __str__(self):
         if(self.gender == "M"):
             pre = "Mr"
@@ -89,6 +101,7 @@ class Tenant(models.Model):
             return True
         except:
             return False
+
 
 class Room(models.Model):
     class Meta:

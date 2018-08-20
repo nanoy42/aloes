@@ -11,10 +11,19 @@
 				Actions
 			</button>
 			<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-				<a class="dropdown-item" href="{% url 'gestion:moveIn' tenant.pk %}"><i class="fa fa-sign-in-alt" ></i> Enménagement</a>
-				<a class="dropdown-item" href="{% url 'gestion:moveOut' tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Déménagement</a>
+				{% if nextLeasing %}
+				<a class="dropdown-item" href="{% url 'gestion:moveIn' 'tenant' tenant.pk %}"><i class="fa fa-sign-in-alt"></i> Enménagement</a>
+				<a class="dropdown-item" href="{% url 'gestion:cancelNextRoom' 'tenant' tenant.pk %}"><i class="fa fa-times"></i> Annuler la prochaine chambre</a>
+				{% endif %}
+				{% if actualLeasing %}
+				<a class="dropdown-item" href="{% url 'gestion:moveOut' 'tenant' tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Déménagement</a>
+				{% endif %}
+				{% if nextLeasing or actualLeasing and not tenant.date_of_departure %}
 				<div class="dropdown-divider"></div>
+				{% endif %}
+				{% if not tenant.date_of_departure %}
 				<a class="dropdown-item" href="{% url 'gestion:leave' tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Quitter la residence</a>
+				{% endif %}
 			</div>
 		</div>
 	</div>
@@ -121,7 +130,7 @@
 				<tbdoy>
 					<tr>
 						<td>
-							{% if nextLeasing %}<a href="{% url 'gestion:roomProfile' nextLeasing.room.pk %}">{{nextLeasing.room}}</a> (Prochaine chambre){% else %} Pas de prochaine chambre (<a href="#">Prévoir une prochaine chambre</a>){% endif %}
+							{% if nextLeasing %}<a href="{% url 'gestion:roomProfile' nextLeasing.room.pk %}">{{nextLeasing.room}}</a> (Prochaine chambre){% else %} Pas de prochaine chambre (<a href="{% url 'gestion:addNextRoom' tenant.pk %}">Prévoir une prochaine chambre</a>){% endif %}
 						</td>
 						<td></td>
 						<td></td>
@@ -129,7 +138,7 @@
 					</tr>
 					<tr>
 						<td>
-							{% if actualLeasing %}<a href="">{{actualLeasing.room}}</a> (Chambre actuelle){% else %}Pas de chambre actuellement (<a href="">Attribuer une chambre</a>{% endif %}
+							{% if actualLeasing %}<a href="{% url 'gestion:roomProfile' actualLeasing.room.pk %}">{{actualLeasing.room}}</a> (Chambre actuelle){% else %}Pas de chambre actuellement (<a href="{% url 'gestion:tenantMoveInDirect' tenant.pk %}">Attribuer une chambre</a>{% endif %}
 						</td>
 						<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
 						<td></td>

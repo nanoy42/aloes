@@ -25,6 +25,11 @@ urlpatterns = [
     path('leasingProfile/<int:pk>', views.leasingProfile, name="leasingProfile"),
     path('addOneYear', views.addOneYear, name="addOneYear"),
     path('leave/<int:pk>', views.leave, name="leave"),
-    path('moveIn/<int:pk>', views.moveIn, name="moveIn"),
-    path('moveOut/<int:pk>', views.moveOut, name="moveOut"),
+    path('moveIn/<str:mode>/<int:pk>', views.moveIn, name="moveIn"),
+    path('moveOut/<str:mode>/<int:pk>', views.moveOut, name="moveOut"),
+    path('addNextTenant/<int:pk>', views.addNextTenant, name="addNextTenant"),
+    path('addNextRoom/<int:pk>', views.addNextRoom, name="addNextRoom"),
+    path('cancelNextRoom/<str:mode>/<int:pk>', views.cancelNextRoom, name="cancelNextRoom"),
+    path('tenantMoveInDirect/<int:pk>', views.tenantMoveInDirect, name="tenantMoveInDirect"),
+    path('roomMoveInDirect/<int:pk>', views.roomMoveInDirect, name="roomMoveInDirect"),
 ]

@@ -8,7 +8,7 @@ from django.views.generic.edit import ModelFormMixin
 
 from documents.models import Document
 from .models import GeneralPreferences
-from .form import LoginForm, ChangePasswordForm
+from .form import LoginForm, ChangePasswordForm, HomeTextEditForm
 
 
 def home(request):

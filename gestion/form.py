@@ -96,3 +96,17 @@ class LeaveForm(forms.ModelForm):
 
 class DateForm(forms.Form):
     date = forms.DateField(widget=DatePicker(), required=True)
+
+class selectTenantWNRForm(forms.Form):
+    tenant = forms.ModelChoiceField(queryset=Tenant.objects.has_no_next_room(), required=True, label="Locataire")
+
+class selectRoomWNTForm(forms.Form):
+    room = forms.ModelChoiceField(queryset=Room.objects.filter(nextTenant=None), required=True, label="Chambre")
+
+class tenantMoveInDirectForm(forms.Form):
+    room = forms.ModelChoiceField(queryset=Room.objects.filter(actualTenant=None), required=True, label="Chambre")
+    date = forms.DateField(widget=DatePicker(), required=True)
+
+class roomMoveInDirectForm(forms.Form):
+    tenant = forms.ModelChoiceField(queryset=Tenant.objects.has_no_room(), required=True, label="Locataire")
+    date = forms.DateField(widget=DatePicker(), required=True)

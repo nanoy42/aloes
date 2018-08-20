@@ -4,7 +4,7 @@ from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 
 from .models import Renovation, Tenant, Leasing, School, Rent, Room
-from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm
+from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm, selectTenantWNRForm, selectRoomWNTForm, tenantMoveInDirectForm, roomMoveInDirectForm
 
 
 def gestionIndex(request):
@@ -264,8 +264,11 @@ def roomProfile(request, pk):
                     leasings = leasings[1:]
                 else:
                     leasings = None
+            else:
+                actualLeasing = None
         else:
             leasings = None
+            actualLeasing = None
     elif(leasings.count() > 0 and leasings[0].tenant == room.actualTenant):
         nextLeasing = None
         actualLeasing = leasings[0]
@@ -299,6 +302,48 @@ class RoomCreate(CreateView):
         context['form_button'] = "Créer la chambre"
         return context
 
+def addNextTenant(request, pk):
+    room = get_object_or_404(Room, pk=pk)
+    if(room.nextTenant):
+        messages.error(request, "Cette chambre est déjà reservée")
+        return redirect(reverse('gestion:roomProfile', kwargs={'pk':pk}))
+    else:
+        form = selectTenantWNRForm(request.POST or None)
+        if(form.is_valid()):
+            tenant = form.cleaned_data['tenant']
+            if(tenant.has_next_room):
+                messages.error(request, "Ce locataire a déjà reservé une chambre")
+            else:
+                room.nextTenant = tenant
+                room.save()
+                leasing = Leasing(room=room, tenant=tenant)
+                leasing.save()
+                messages.success(request, "La chambre a bien été réservée")
+            return redirect(reverse('gestion:roomProfile', kwargs={'pk':pk}))
+    message = "Choisir un locataire pour réserver la chambre"
+    return render(request, "form.html", {"form": form, "form_title": "Réservation de la chambre " + str(room), "p": message, "form_button": "Réserver la chambre", "form_icon": "star"})
+
+def roomMoveInDirect(request, pk):
+    room = get_object_or_404(Room, pk=pk)
+    if(room.actualTenant):
+        messages.error(request, "La chambre n'est pas vide")
+        return redirect(reverse('gestion:roomProfile', kwargs={"pk":pk}))
+    else:
+        form = roomMoveInDirectForm(request.POST or None)
+        if(form.is_valid()):
+            tenant = form.cleaned_data['tenant']
+            if(tenant.has_room):
+                messages.error(request, "Ce locataire possède déjà une chambre")
+            else:
+                room.actualTenant = tenant
+                room.save()
+                leasing = Leasing(room=room, tenant=tenant, date_of_entry=form.cleaned_data['date'])
+                leasing.save()
+                messages.success(request, "Le locataire a bien été emménagé")
+            return redirect(reverse('gestion:roomProfile', kwargs={"pk":pk}))
+    message = "Choisir un locataire et la date d'entrée dans la chambre"
+    return render(request, "form.html", {"form":form, "form_title": "Location de la chambre " + str(room), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
+
 
 ########## Tenants ##########
 
@@ -317,8 +362,11 @@ def tenantProfile(request, pk):
                     leasings = leasings[1:]
                 else:
                     leasings = None
+            else:
+                actualLeasing = None
         else:
             leasings = None
+            actualLeasing = None
     elif(leasings.count() > 0 and tenant.has_room and leasings[0].room == tenant.room):
         nextLeasing = None
         actualLeasing = leasings[0]
@@ -352,6 +400,47 @@ class TenantCreate(CreateView):
         context['form_button'] = "Créer le locataire"
         return context
 
+def addNextRoom(request, pk):
+    tenant = get_object_or_404(Tenant, pk=pk)
+    if(tenant.has_next_room):
+        messages.error(request, "Ce locataire a déjà réservé une chambre")
+        return redirect(reverse('gestion:tenantProfile', kwargs={'pk':pk}))
+    else:
+        form = selectRoomWNTForm(request.POST or None)
+        if(form.is_valid()):
+            room = form.cleaned_data['room']
+            if(room.nextTenant):
+                messages.error(request, "Cette chambre est déjà réservée")
+            else:
+                room.nextTenant = tenant
+                room.save()
+                leasing = Leasing(room=room, tenant=tenant)
+                leasing.save()
+                messages.success(request, "Le locataire a bien réservé la chambre")
+            return redirect(reverse('gestion:tenantProfile', kwargs={'pk':pk}))
+    message = "Choisir une chambre non réservée"
+    return render(request, "form.html", {"form": form, "form_title": "Réservation pour le locataire " + str(tenant), "p": message, "form_button": "Réserver la chambre", "form_icon": "star"})
+
+def tenantMoveInDirect(request, pk):
+    tenant = get_object_or_404(Tenant, pk=pk)
+    if(tenant.has_room):
+        messages.error(request, "Ce locataire possède déjà une chambre")
+        return redirect(reverse('gestion:tenantProfile', kwargs={"pk":pk}))
+    else:
+        form = tenantMoveInDirectForm(request.POST or None)
+        if(form.is_valid()):
+            room = form.cleaned_data['room']
+            if(room.actualTenant):
+                messages.error(request, "Cette chambre n'est pas vide")
+            else:
+                room.actualTenant = tenant
+                room.save()
+                leasing = Leasing(room=room, tenant=tenant, date_of_entry=form.cleaned_data['date'])
+                leasing.save()
+                messages.success(request, "Le locataire a bien été emménagé")
+            return redirect(reverse('gestion:tenantProfile', kwargs={"pk":pk}))
+    message = "Choisir une chambre vide et la date d'entrée dans la chambre"
+    return render(request, "form.html", {"form":form, "form_title": "Attribution d'une chambre à " + str(tenant), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
 
 ########## Leasings ##########
 
@@ -396,13 +485,21 @@ def leave(request, pk):
         return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
     return render(request, "form.html", {"form":leaveForm, "p":message, "form_title":"Faire quitter la résidence", "form_button":"Faire quitter la résidence", "form_icon":"sign-out-alt"})
 
-def moveOut(request, pk):
+def moveOut(request, pk, mode):
+    if(mode not in ["tenant", "room"]):
+        mode = "tenant"
     tenant = get_object_or_404(Tenant, pk=pk)
     if(not tenant.has_room):
         messages.error(request, "Le locataire n'est dans aucune chambre actuellement")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
     moveOutForm = DateForm(request.POST or None)
     message = "Veuillez indiquer la date de sortie officielle de la chambre " + str(tenant.room) + " pour " + str(tenant)
+    if(mode == "room"):
+        form_title = "Vider la chambre " + str(tenant.room)
+        form_button = "Vider la chambre"
+    else:
+        form_title = "Déménager " + str(tenant)
+        form_button = "Déménager"
     if(moveOutForm.is_valid()):
         leasing = get_object_or_404(Leasing, tenant = tenant, room = tenant.room)
         leasing.date_of_departure = moveOutForm.cleaned_data['date']
@@ -410,20 +507,33 @@ def moveOut(request, pk):
         room = tenant.room
         room.actualTenant = None
         room.save()
-        messages.success(request, "Le locataire a bien déménagé")
-        return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
-    return render(request, "form.html", {"form": moveOutForm, "p": message, "form_title": "Déménager " + str(tenant), "form_button": "Déménager", "form_icon": "sign-out-alt"})
+        if(mode == "room"):
+            messages.success(request, "La chambre a bien été vidé")
+            return redirect(reverse("gestion:roomProfile", kwargs={"pk":room.pk}))
+        else:
+            messages.success(request, "Le locataire a bien déménagé")
+            return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
+    return render(request, "form.html", {"form": moveOutForm, "p": message, "form_title": form_title, "form_button": form_button, "form_icon": "sign-out-alt"})
 
-def moveIn(request, pk):
+def moveIn(request, pk, mode):
+    if(mode not in ["tenant", "room"]):
+        mode = "tenant"
     tenant = get_object_or_404(Tenant, pk=pk)
     if(not tenant.has_next_room):
         messages.error(request, "Ce locataire n'a pas de prochaine chambre")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk": tenant.pk}))
     elif(tenant.nextRoom.actualTenant is not None):
-        messages.error(request, "La prochaine chambre n'est pas vide")
-        return redirect(reverse('gestion:tenantProfile', kwargs={"pk": tenant.pk}))
+        if(mode == "room"):
+            messages.error(request, "La chambre n'est pas vide")
+            return redirect(reverse('gestion:roomProfile', kwargs={"pk":tenant.next_room.pk}))
+        else:
+            messages.error(request, "La prochaine chambre n'est pas vide")
+            return redirect(reverse('gestion:tenantProfile', kwargs={"pk": tenant.pk}))
     elif(tenant.has_room):
-        messages.error(request, "Ce locataire possède actuellement une chambre. Déménagez le ou utiliser la fonction emménagement-déménagement")
+        if(mode == "room"):
+            messages.error(request, "Le prochain locataire possède actuellement une chambre. Déménager le avant de l'emménager")
+        else:
+            messages.error(request, "Ce locataire possède actuellement une chambre. Déménagez le avant de l'emménager")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
     moveInForm = DateForm(request.POST or None)
     message = "Veuillez indiquer la date d'entrée officielle dans la chambre " + str(tenant.nextRoom) + " pour " + str(tenant)
@@ -432,8 +542,27 @@ def moveIn(request, pk):
         room.actualTenant = tenant
         room.nextTenant = None
         room.save()
-        leasing = Leasing(room=room, tenant=tenant, date_of_entry=moveInForm.cleaned_data['date'])
+        leasing = Leasing.objects.get(room=room, tenant=tenant)
+        leasing.date_of_entry=moveInForm.cleaned_data['date']
         leasing.save()
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     return render(request, "form.html", {"form": moveInForm, "p": message, "form_title": "Emménagement d'un locataire", "form_button": "Emménager", "form_icon": "sign-in-alt"})
 
+def cancelNextRoom(request, pk, mode):
+    if(mode not in ["tenant", "room"]):
+        mode = "tenant"
+    tenant = get_object_or_404(Tenant, pk=pk)
+    if(not tenant.has_next_room):
+        messages.error(request, "Ce locataire n'a pas de prochaine chambre")
+        return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
+    room = tenant.nextRoom
+    room.nextTenant = None
+    room.save()
+    leasing = Leasing.objects.get(room=room, tenant=tenant)
+    leasing.delete()
+    if(mode == "room"):
+        messages.success(request, "Le prochain locataire a bien été annulé")
+        return redirect(reverse('gestion:roomProfile', kwargs={"pk":room.pk}))
+    else:
+        messages.success(request, "La prochaine chambre a été annulée")
+        return redirect(reverse('gestion:tenantProfile', kwargs={"pk":room.pk}))
