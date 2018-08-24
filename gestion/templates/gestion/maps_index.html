@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Plans</h3>
+<br>
+<a href="{% url 'gestion:createMap' %}" class="btn btn-primary"><i class="fa fa-star"></i> Créer un nouveau plan</a>
+<br><br>
+<div class="table-responsive">
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Nom</th>
+				<th>Voir le plan</th>
+				<th>Administration</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for map in maps %}
+			<tr>
+				<td>{{map.name}}</td>
+				<td><a href="{{map.map.url}}" target="_blank"><i class="fa fa-eye"></i></a></td>
+				<td><a href="{% url 'gestion:editMap' map.pk %}" class="btn btn-primary btn-sm"><i class="fa fa-pencil-alt"></i> Modifier</a> <a href="{% url 'gestion:deleteMap' map.pk %}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Supprimer</a></td>
+			</tr>
+			{% endfor %}
+	</table>
+	{% endblock %}

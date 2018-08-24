@@ -6,7 +6,9 @@
 <form method="post" action="">
 	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
 		<button type="submit" class="btn btn-primary">Sauvegarder</button>
-		<a href="" class="btn btn-primary">Plan</a>
+		{% if room.map %}
+		<a href="{{room.map.url}}" target="_blank" class="btn btn-primary">Plan</a>
+		{% endif %}
 		<div class="btn-group" role="group">
 			<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				Actions
@@ -20,7 +22,7 @@
 				{% if actualLeasing or nextLeasing %}
 				<div class="dropdown-divider"></div>
 				{% endif %}
-				<a class="dropdown-item" href="#"><i class="fa fa-map"></i> Changer le plan</a>
+				<a class="dropdown-item" href="{% url 'gestion:changeRoomMap' room.pk %}"><i class="fa fa-map"></i> Changer le plan</a>
 			</div>
 		</div>
 	</div>
@@ -90,7 +92,6 @@
 					{% endfor %}
 				</tbody>
 			</table>
-
 		</div>
 	</div>
 	</form>
