@@ -41,7 +41,7 @@
 				</div>
 			</li>
 			<li class="nav-item {% if active == 'maps' %}active{% endif %}">
-				<a class="nav-link" href="#"><i class="fa fa-map"></i> Plans</a>
+				<a class="nav-link" href="{% url 'gestion:indexMap' %}"><i class="fa fa-map"></i> Plans</a>
 			</li>
 			<li class="nav-item {% if active == 'documents' %}active{% endif %}">
 				<a class="nav-link" href="{% url 'documents:index' %}"><i class="fa fa-file-alt"></i> Documents</a>

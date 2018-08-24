@@ -169,8 +169,8 @@ class Leasing(models.Model):
 class Map(models.Model):
     class Meta:
         verbose_name="Plan"
-    name = models.CharField(max_length=255)
-    map = models.ImageField()
+    name = models.CharField(max_length=255, verbose_name="Nom")
+    map = models.ImageField(verbose_name="Plan")
 
     def __str__(self):
-        return name
+        return self.name

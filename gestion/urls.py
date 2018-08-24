@@ -32,4 +32,9 @@ urlpatterns = [
     path('cancelNextRoom/<str:mode>/<int:pk>', views.cancelNextRoom, name="cancelNextRoom"),
     path('tenantMoveInDirect/<int:pk>', views.tenantMoveInDirect, name="tenantMoveInDirect"),
     path('roomMoveInDirect/<int:pk>', views.roomMoveInDirect, name="roomMoveInDirect"),
+    path('createMap', views.MapCreate.as_view(), name="createMap"),
+    path('editMap/<int:pk>', views.MapEdit.as_view(), name="editMap"),
+    path('deleleMap/<int:pk>', views.MapDelete.as_view(), name="deleteMap"),
+    path('indexMap', views.mapIndex, name="indexMap"),
+
 ]

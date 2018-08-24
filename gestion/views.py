@@ -3,7 +3,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 
-from .models import Renovation, Tenant, Leasing, School, Rent, Room
+from .models import Renovation, Tenant, Leasing, School, Rent, Room, Map
 from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm, selectTenantWNRForm, selectRoomWNTForm, tenantMoveInDirectForm, roomMoveInDirectForm
 
 
@@ -566,3 +566,68 @@ def cancelNextRoom(request, pk, mode):
     else:
         messages.success(request, "La prochaine chambre a été annulée")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":room.pk}))
+
+
+########## Maps ##########
+
+
+def mapIndex(request):
+    search_form = SearchForm()
+    maps = Map.objects.all()
+    return render(request, "gestion/maps_index.html", {"maps": maps, "sidebar":True, "search_form":search_form, "active":"maps"})
+
+class MapCreate(CreateView):
+    model = Map
+    fields = "__all__"
+    template_name = "form.html"
+    success_url = reverse_lazy('gestion:indexMap')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Le plan a bien été créé")
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = "Création d'un nouveau plan"
+        context['form_icon'] = "star"
+        context['form_button'] = "Créer le plan"
+        context['file'] = True
+        context['active'] = 'maps'
+        return context
+
+class MapEdit(UpdateView):
+    model = Map
+    fields = "__all__"
+    template_name = "form.html"
+    success_url = reverse_lazy('gestion:indexMap')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Le plan a bien été modifié")
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = "Modification d'un plan"
+        context['form_icon'] = "pencil-alt"
+        context['form_button'] = "Modifier le plan"
+        context['file'] = True
+        context['active'] = 'maps'
+        return context
+
+class MapDelete(DeleteView):
+    model = Map
+    context_object_name = "object_name"
+    template_name = "delete.html"
+    success_url = reverse_lazy('gestion:indexMap')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "Le plan a bien été supprimé")
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['delete_title'] = "Suppression d'un plan"
+        context['delete_object'] = "le plan"
+        context['delete_link'] = "gestion:indexMap"
+        context['active'] = 'maps'
+        return context
