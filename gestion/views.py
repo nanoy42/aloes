@@ -344,6 +344,28 @@ def roomMoveInDirect(request, pk):
     message = "Choisir un locataire et la date d'entrée dans la chambre"
     return render(request, "form.html", {"form":form, "form_title": "Location de la chambre " + str(room), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
 
+class ChangeRoomMap(UpdateView):
+    model = Room
+    fields = ("map",)
+    template_name = "form.html"
+
+    def get_success_url(self, **kwargs):
+        return reverse("gestion:roomProfile", kwargs={'pk': self.object.pk})
+
+    def form_valid(self, form):
+        messages.success(self.request, "Le plan a bien été modifié")
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_title'] = "Modification du plan de " + str(self.object)
+        context['form_icon'] = "pencil-alt"
+        context['form_button'] = "Modifier le plan"
+        context['file'] = True
+        context['active'] = 'rooms'
+        return context
+
+
 
 ########## Tenants ##########
 

@@ -36,5 +36,5 @@ urlpatterns = [
     path('editMap/<int:pk>', views.MapEdit.as_view(), name="editMap"),
     path('deleleMap/<int:pk>', views.MapDelete.as_view(), name="deleteMap"),
     path('indexMap', views.mapIndex, name="indexMap"),
-
+    path('changeRoomMap/<int:pk>', views.ChangeRoomMap.as_view(), name="changeRoomMap")
 ]

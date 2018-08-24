@@ -114,6 +114,7 @@ class Room(models.Model):
     actualTenant = models.OneToOneField('Tenant', on_delete=models.PROTECT, related_name="room", verbose_name="Locataire actuel", blank=True, null=True)
     nextTenant = models.OneToOneField('Tenant', on_delete=models.PROTECT, null=True, blank=True, related_name="nextRoom", verbose_name="Prochain locataire")
     observations = models.TextField(verbose_name="Observations", blank=True)
+    map = models.ImageField(verbose_name="Plan", blank=True, null=True)
 
     def __str__(self):
         return self.room
