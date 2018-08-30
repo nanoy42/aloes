@@ -1,4 +1,7 @@
+import csv
+
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
@@ -653,3 +656,24 @@ class MapDelete(DeleteView):
         context['delete_link'] = "gestion:indexMap"
         context['active'] = 'maps'
         return context
+
+
+########## Other ##########
+def export_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="export.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Chambre (lot)', 'Locataire (email)', 'Réservation', 'Réparation', 'Loyer'])
+
+    rooms = Room.objects.all()
+    for room in rooms:
+        if(room.actualTenant):
+            tenant_text = str(room.actualTenant) + "(" + str(room.actualTenant.email) +")"
+        else:
+            tenant_text = "Pas de locataire actuel"
+        writer.writerow([str(room), tenant_text, str(room.nextTenant or "Pas réservée"), str(room.renovation or "Non indiqué"), str(room.rentType or "Non indiqué")])
+    tenants = Tenant.objects.has_no_room()
+    for tenant in tenants:
+        writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
+    return response
