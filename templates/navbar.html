@@ -31,7 +31,7 @@
 					<a class="dropdown-item" href="{% url 'gestion:createTenant' %}"><i class="fa fa-user-plus"></i> Ajouter un locataire</a>
 					<a class="dropdown-item" href="#"><i class="fa fa-users"></i> Afficher les locataires sans chambre</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" href=""><i class="fa fa-file-excel"></i> Exporter les données sous excel</a>
+					<a class="dropdown-item" href="{% url 'gestion:exportCSV' %}"><i class="fa fa-file-excel"></i> Exporter les données sous excel</a>
 					<div class="dropdown-divider"></div>
 					<a class="dropdown-item" href=""><i class="fa fa-database"></i> Sauvegarder la base de données</a>
 					<a class="dropdown-item" href=""><i class="fa fa-hdd"></i> Restaurer la base de données</a>
