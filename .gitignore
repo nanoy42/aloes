@@ -32,3 +32,5 @@ tags
 
 # End of https://www.gitignore.io/api/git,vim,django
 
+Pipfile
+Pipfile.lock
