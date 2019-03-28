@@ -26,6 +26,19 @@
 				{% endif %}
 			</div>
 		</div>
+		<div class="btn-group" role="group">
+			<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Documents
+			</button>
+			<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+				{% if tenant.date_of_departure %}
+				<a class="dropdown-item" href="{% url 'generate_docs:leaseEndAttestation' tenant.pk %}">Attestation de fin de bail</a>
+				{% endif %}
+				{% if tenant.has_room %}
+				<a class="dropdown-item" href="{% url 'generate_docs:leaseAttestation' tenant.pk %}">Attestation de résidence</a>
+				{% endif %}
+			</div>
+		</div>
 	</div>
 	<br><br>
 	{% csrf_token %}

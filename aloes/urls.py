@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('documents/', include('documents.urls')),
     path('gestion/', include('gestion.urls')),
+    path('generate_docs/', include('generate_docs.urls')),
     path('', views.home, name="home"),
     path('about', views.about, name="about"),
     path('login', views.loginView, name="login"),

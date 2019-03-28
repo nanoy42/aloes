@@ -81,9 +81,9 @@ class Tenant(models.Model):
 
     def __str__(self):
         if(self.gender == "M"):
-            pre = "Mr"
+            pre = "M."
         else:
-            pre = "Mme"
+            pre = "Mme."
         return pre + " " + self.first_name + " " + self.name
 
     @property
