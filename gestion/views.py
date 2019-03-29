@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
+from django.db.models import Q
 
 from .models import Renovation, Tenant, Leasing, School, Rent, Room, Map
 from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm, selectTenantWNRForm, selectRoomWNTForm, tenantMoveInDirectForm, roomMoveInDirectForm
@@ -19,13 +20,11 @@ def gestionIndex(request):
         if(search_form.cleaned_data['first_name']):
             res = res.filter(actualTenant__first_name__icontains=search_form.cleaned_data['first_name'])
         if(search_form.cleaned_data['name']):
-            res = res.filter(Q(actualTenant_last_name__icontains=search_form.cleaned_data['name']) | Q(actualTenant__first_name__icontains=search_form.cleaned_data['name']))
+            res = res.filter(Q(actualTenant__name__icontains=search_form.cleaned_data['name']) | Q(actualTenant__first_name__icontains=search_form.cleaned_data['name']))
         if(search_form.cleaned_data['room']):
-            res = res.filter(room=search_form.cleaned_data['room'])
+            res = res.filter(room__istartswith=search_form.cleaned_data['room'])
         if(search_form.cleaned_data['lot']):
             res = res.filter(lot=search_form.cleaned_data['lot'])
-        if(search_form.cleaned_data['payment'] != "I"):
-            res = res
         if(search_form.cleaned_data['gender'] != "I"):
             res = res.filter(actualTenant__gender=search_form.cleaned_data['gender'])
         if(search_form.cleaned_data['school']):
@@ -36,10 +35,17 @@ def gestionIndex(request):
             res = res.filter(actualTenant__temporary=False)
         if(search_form.cleaned_data['exclude_empty_rooms']):
             res = res.exclude(actualTenant=None)
+        if(search_form.cleaned_data['renovation']):
+            res = res.filter(renovation=search_form.cleaned_data['renovation'])
         if(search_form.cleaned_data['building'] != "I"):
-            res = filter(lambda room: room.building == search_form.cleaned_data['building'], res.all())
-        else:
-            res = res.all()
+            res = res.filter(room__istartswith=search_form.cleaned_data['building'])
+        if(search_form.cleaned_data['sort']):
+            if(search_form.cleaned_data['sort']=="room"):
+                res=res.order_by("room")
+            if(search_form.cleaned_data['sort']=="first_name"):
+                res=res.order_by("actualTenant__first_name")
+            if(search_form.cleaned_data['sort']=="last_name"):
+                res=res.order_by("actualTenant__name")
     else:
         res = Room.objects.all()
     return render(request, "gestion/gestionIndex.html", {"search_form": search_form, "sidebar": True, "active":"default", "rooms": res})
