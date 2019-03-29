@@ -467,6 +467,11 @@ def tenantMoveInDirect(request, pk):
     message = "Choisir une chambre vide et la date d'entrée dans la chambre"
     return render(request, "form.html", {"form":form, "form_title": "Attribution d'une chambre à " + str(tenant), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
 
+def homeless_tenants(request):
+    """Display tenants without room."""
+    homeless = Tenant.objects.has_no_room()
+    return render(request, "gestion/homeless_tenants.html", {"homeless": homeless})
+
 ########## Leasings ##########
 
 def leasingProfile(request, pk):
@@ -659,6 +664,7 @@ class MapDelete(DeleteView):
 
 
 ########## Other ##########
+
 def export_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="export.csv"'
