@@ -677,3 +677,8 @@ def export_csv(request):
     for tenant in tenants:
         writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
     return response
+
+def mail_tenants(request):
+    tenants_with_room = Tenant.objects.has_room()
+    tenants_emails = [tenant.email for tenant in tenants_with_room if tenant.email is not None]
+    return render(request, "gestion/mail_tenants.html", {"tenants_emails" : tenants_emails})
