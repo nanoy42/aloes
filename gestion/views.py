@@ -1,10 +1,12 @@
 import csv
 
+from django.core import management
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
+from django_cron import CronJobBase, Schedule
 
 from .models import Renovation, Tenant, Leasing, School, Rent, Room, Map
 from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm, selectTenantWNRForm, selectRoomWNTForm, tenantMoveInDirectForm, roomMoveInDirectForm
@@ -659,6 +661,7 @@ class MapDelete(DeleteView):
 
 
 ########## Other ##########
+
 def export_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="export.csv"'
@@ -677,3 +680,23 @@ def export_csv(request):
     for tenant in tenants:
         writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
     return response
+
+########## Backup ##########
+
+def copy_backups():
+    return True
+
+def backup(request):
+    management.call_command('dbbackup')
+    copy_backups()
+    messages.success(request, "La base de données a bien été sauvegardée.")
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+class Backup(CronJobBase):
+    RUN_AT_TIMES = ['18:00']
+    schedule = Schedule(run_at_times=RUN_AT_TIMES)
+    code = 'gestion.Backup'
+
+    def do(self):
+        management.call_command('dbbackup')
+        copy_backups()
