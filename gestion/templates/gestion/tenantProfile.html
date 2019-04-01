@@ -2,169 +2,177 @@
 {% load bootstrap4 %}
 {% block content%}
 <h3>{{tenant}}</h3>
-<form method="post" action="">
-	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-		<button type="submit" class="btn btn-primary">Sauvegarder</button>
+<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+	<a href="{% url 'gestion:editTenant' tenant.pk %}" type="submit" class="btn btn-primary">Modifier</a>
 
-		<div class="btn-group" role="group">
-			<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				Actions
-			</button>
-			<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-				{% if nextLeasing %}
-				<a class="dropdown-item" href="{% url 'gestion:moveIn' 'tenant' tenant.pk %}"><i class="fa fa-sign-in-alt"></i> Enménagement</a>
-				<a class="dropdown-item" href="{% url 'gestion:cancelNextRoom' 'tenant' tenant.pk %}"><i class="fa fa-times"></i> Annuler la prochaine chambre</a>
+	<div class="btn-group" role="group">
+		<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			Actions
+		</button>
+		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+			{% if nextLeasing %}
+			<a class="dropdown-item" href="{% url 'gestion:moveIn' 'tenant' tenant.pk %}"><i class="fa fa-sign-in-alt"></i> Enménagement</a>
+			<a class="dropdown-item" href="{% url 'gestion:cancelNextRoom' 'tenant' tenant.pk %}"><i class="fa fa-times"></i> Annuler la prochaine chambre</a>
+			{% endif %}
+			{% if actualLeasing %}
+			<a class="dropdown-item" href="{% url 'gestion:moveOut' 'tenant' tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Déménagement</a>
+			{% endif %}
+			{% if nextLeasing or actualLeasing and not tenant.date_of_departure %}
+			<div class="dropdown-divider"></div>
+			{% endif %}
+			{% if not tenant.date_of_departure %}
+			<a class="dropdown-item" href="{% url 'gestion:leave' tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Quitter la residence</a>
+			{% endif %}
+		</div>
+	</div>
+</div>
+<br><br>
+{% csrf_token %}
+<div class="row">
+	<div class="col">
+		<h4>Informations générales</h4>
+		<div class="row">
+			<div class="col">
+				<div class="form-group"><label for="id_first_name">Prénom</label><input type="text" name="first_name" value="{{tenant.first_name}}" maxlength="255" class="form-control" placeholder="Prénom" title="" required id="id_first_name" disabled/></div>
+			</div>
+			<div class="col">
+				<div class="form-group"><label for="id_name">Nom</label><input type="text" name="name" value="{{tenant.name}}" maxlength="255" class="form-control" placeholder="Nom" title="" required id="id_name" disabled/></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="form-group">
+					<label for="id_gender">Sexe</label>
+					<select name="gender" class="form-control" title="" required id="id_gender" disabled>
+							<option value="M" selected>{% if tenant.gender == "M"%}Masculin{% else %}Féminin{% endif %}</option>
+					</select>
+				</div>
+			</div>
+			<div class="col">
+				<div class="form-group"><label for="id_email">Email</label><input type="email" name="email" maxlength="254" class="form-control" placeholder="Email" title="" id="id_email" value="{{tenant.email}}" disabled/></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="form-group"><label for="id_cellphone">Numéro de téléphone portable</label><input type="text" name="cellphone" value="{{tenant.cellphone}}" maxlength="10" class="form-control" placeholder="Numéro de téléphone portable" title="" id="id_cellphone" disabled/></div>
+			</div>
+			<div class="col">
+				<div class="form-group"><label for="id_phone">Téléphone fixe</label><input type="text" name="phone" value="{{tenant.phone}}" maxlength="10" class="form-control" placeholder="Téléphone fixe" title="" id="id_phone" disabled/></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="form-group">
+					<label for="id_school">Ecole</label>
+					<select name="school" class="form-control" title="" required id="id_school" disabled>
+							<option value="1" selected>{{tenant.school}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="col">
+				<div class="form-group"><label for="id_school_year">Année d'étude</label><input type="number" name="school_year" value="{{tenant.school_year}}" min="0" class="form-control" placeholder="Année d'étude" title="" id="id_school_year" disabled/></div>
+			</div>
+		</div>
+		<div class="row">
+				<div class="col">
+					<div class="form-group"><label for="id_date_of_entry">Date d'entrée à la rez</label><input  class="form-control" id="id_date_of_entry" title="" name="date_of_entry" type="text" class="form-control" placeholder="Date" value="{{tenant.date_of_entry}}" disabled/></div>
+				</div>
+			<div class="col">
+				{% if tenant.date_of_departure %}
+					<div class="form-group"><label for="id_date_of_departure">Date de sortie de la rez</label><input  class="form-control" id="id_date_of_departure" title="" name="date_of_departure" type="text" class="form-control" placeholder="Date" value="{{tenant.date_of_departure}}" disabled/></div>
+				{% else %}
+				Utiliser la fonction "Quitter la résidence" pour avoir accès à la date de départ
 				{% endif %}
-				{% if actualLeasing %}
-				<a class="dropdown-item" href="{% url 'gestion:moveOut' 'tenant' tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Déménagement</a>
-				{% endif %}
-				{% if nextLeasing or actualLeasing and not tenant.date_of_departure %}
-				<div class="dropdown-divider"></div>
-				{% endif %}
-				{% if not tenant.date_of_departure %}
-				<a class="dropdown-item" href="{% url 'gestion:leave' tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Quitter la residence</a>
-				{% endif %}
+			</div>
+		</div>
+		<h4>Naissance</h4>
+		<div class="row">
+			<div class="col">
+				<div class="form-group"><label for="id_birthday">Date de naissance</label><input type="text" name="birthday" value="{{tenant.birthday}}" class="form-control" placeholder="Date de naissance" title="" id="id_birthday" disabled/></div>
+			</div>
+			<div class="col">
+				<div class="form-group"><label for="id_birthcity">Ville de naissance</label><input type="text" name="birthcity" value="{{tenant.birthcity}}" maxlength="255" class="form-control" placeholder="Ville de naissance" title="" id="id_birthcity" disabled/></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="form-group"><label for="id_birthdepartement">Département de naissance</label><input type="text" name="birthdepartement" value="{{tenant.birthdepartement}}" maxlength="255" class="form-control" placeholder="Département de naissance" title="" id="id_birthdepartement" disabled/></div>
+			</div>
+			<div class="col">
+				<div class="form-group"><label for="id_birthcountry">Pays de naissance</label><input type="text" name="birthcountry" value="{{tenant.birthcountry}}" maxlength="255" class="form-control" placeholder="Pays de naissance" title="" id="id_birthcountry" disabled/></div>
+			</div>
+		</div>
+		<h4>Adresse</h4>
+		<div class="row">
+			<div class="col">
+				<div class="form-group"><label for="id_street_number">N° de rue</label><input type="number" name="street_number" value="{{tenant.street_number}}" min="0" class="form-control" placeholder="N° de rue" title="" id="id_street_number" disabled/></div>
+			</div>
+			<div class="col">
+				<div class="form-group"><label for="id_street">Rue</label><input type="text" name="street" value="{{tenant.street}}" maxlength="255" class="form-control" placeholder="Rue" title="" id="id_street" disabled/></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="form-group"><label for="id_zipcode">Code postal</label><input type="number" name="zipcode" value="{{tenant.zipcode}}" min="0" class="form-control" placeholder="Code postal" title="" id="id_zipcode" disabled/></div>
+			</div>
+			<div class="col">
+				<div class="form-group"><label for="id_city">Ville</label><input type="text" name="city" value="{{tenant.city}}" maxlength="255" class="form-control" placeholder="Ville" title="" id="id_city" disabled/></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="form-group"><label for="id_country">Pays</label><input type="text" name="country" value="{{tenant.country}}" maxlength="255" class="form-control" placeholder="Pays" title="" id="id_country" disabled/></div>
 			</div>
 		</div>
 	</div>
-	<br><br>
-	{% csrf_token %}
-	<div class="row">
-		<div class="col">
-			<h4>Informations générales</h4>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.first_name %}
-				</div>
-				<div class="col">
-					{% bootstrap_field tenantForm.name %}
-				</div>
-			</div>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.gender %}
-				</div>
-				<div class="col">
-					{% bootstrap_field tenantForm.email %}
-				</div>
-			</div>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.cellphone %}
-				</div>
-				<div class="col">
-					{% bootstrap_field tenantForm.phone %}
-				</div>
-			</div>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.school %}
-				</div>
-				<div class="col">
-					{% bootstrap_field tenantForm.school_year %}
-				</div>
-			</div>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.date_of_entry %}
-				</div>
-				<div class="col">
-					{% if tenant.date_of_departure %}
-					{% bootstrap_field tenantForm.date_of_departure %}
-					{% else %}
-					Utiliser la fonction "Quitter la résidence" pour avoir accès à la date de départ
-					{% endif %}
-				</div>
-			</div>
-			<h4>Naissance</h4>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.birthday %}
-				</div>
-				<div class="col">
-					{% bootstrap_field tenantForm.birthcity %}
-				</div>
-			</div>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.birthdepartement %}
-				</div>
-				<div class="col">
-					{% bootstrap_field tenantForm.birthcountry %}
-				</div>
-			</div>
-			<h4>Adresse</h4>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.street_number %}
-				</div>
-				<div class="col">
-					{% bootstrap_field tenantForm.street %}
-				</div>
-			</div>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.zipcode %}
-				</div>
-				<div class="col">
-					{% bootstrap_field tenantForm.city %}
-				</div>
-			</div>
-			<div class="row">
-				<div class="col">
-					{% bootstrap_field tenantForm.country %}
-				</div>
-			</div>
-		</div>
-		<div class="col">
-			<h4>Chambres</h4>
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>Chambre</th>
-						<th>Date d'entrée</th>
-						<th>Date de sortie</th>
-						<th>Dossier</th>
-					</tr>
-				</thead>
-				<tbdoy>
-					<tr>
-						<td>
-							{% if nextLeasing %}<a href="{% url 'gestion:roomProfile' nextLeasing.room.pk %}">{{nextLeasing.room}}</a> (Prochaine chambre){% else %} Pas de prochaine chambre (<a href="{% url 'gestion:addNextRoom' tenant.pk %}">Prévoir une prochaine chambre</a>){% endif %}
-						</td>
-						<td></td>
-						<td></td>
-						<td>{% if nextLeasing %}<a href="{% url 'gestion:leasingProfile' nextLeasing.pk %}"><i class="fa fa-folder-open"></i>{% endif %}</td>
-					</tr>
-					<tr>
-						<td>
-							{% if actualLeasing %}<a href="{% url 'gestion:roomProfile' actualLeasing.room.pk %}">{{actualLeasing.room}}</a> (Chambre actuelle){% else %}Pas de chambre actuellement (<a href="{% url 'gestion:tenantMoveInDirect' tenant.pk %}">Attribuer une chambre</a>{% endif %}
-						</td>
-						<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
-						<td></td>
-						<td>{% if actualLeasing %}<a href="{% url 'gestion:leasingProfile' actualLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
-					</tr>
-					{% for leasing in leasings %}
-					<tr>
-						<td><a href="{% url 'gestion:roomProfile' leasing.room.pk %}">{{leasing.room}}</a></td>
-						<td>{{leasing.date_of_entry}}</td>
-						<td>{{leasing.date_of_departure}}</td>
-						<td><a href="{% url 'gestion:leasingProfile' leasing.pk %}"><i class="fa fa-folder-open"></i></a></td>
-					</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-			<h3>Observations</h3>
-			{% bootstrap_field tenantForm.observations %}
-			{% bootstrap_field tenantForm.temporary %}
-			{% bootstrap_field tenantForm.leaving %}
-			<h3>Fournitures</h3>
-			{% bootstrap_field tenantForm.waterproof_undersheet %}
-			{% bootstrap_field tenantForm.pillow %}
-			{% bootstrap_field tenantForm.pillowcase %}
-			{% bootstrap_field tenantForm.blanket %}
-			{% bootstrap_field tenantForm.sheet %}
-		</div>
+	<div class="col">
+		<h4>Chambres</h4>
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Chambre</th>
+					<th>Date d'entrée</th>
+					<th>Date de sortie</th>
+					<th>Dossier</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						{% if nextLeasing %}<a href="{% url 'gestion:roomProfile' nextLeasing.room.pk %}">{{nextLeasing.room}}</a> (Prochaine chambre){% else %} Pas de prochaine chambre (<a href="{% url 'gestion:addNextRoom' tenant.pk %}">Prévoir une prochaine chambre</a>){% endif %}
+					</td>
+					<td></td>
+					<td></td>
+					<td>{% if nextLeasing %}<a href="{% url 'gestion:leasingProfile' nextLeasing.pk %}"><i class="fa fa-folder-open"></i>{% endif %}</td>
+				</tr>
+				<tr>
+					<td>
+						{% if actualLeasing %}<a href="{% url 'gestion:roomProfile' actualLeasing.room.pk %}">{{actualLeasing.room}}</a> (Chambre actuelle){% else %}Pas de chambre actuellement (<a href="{% url 'gestion:tenantMoveInDirect' tenant.pk %}">Attribuer une chambre</a>{% endif %}
+					</td>
+					<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
+					<td></td>
+					<td>{% if actualLeasing %}<a href="{% url 'gestion:leasingProfile' actualLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
+				</tr>
+				{% for leasing in leasings %}
+				<tr>
+					<td><a href="{% url 'gestion:roomProfile' leasing.room.pk %}">{{leasing.room}}</a></td>
+					<td>{{leasing.date_of_entry}}</td>
+					<td>{{leasing.date_of_departure}}</td>
+					<td><a href="{% url 'gestion:leasingProfile' leasing.pk %}"><i class="fa fa-folder-open"></i></a></td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		<h3>Observations</h3>
+		<div class="form-group"><label for="id_observations">Observations</label><textarea name="observations" cols="40" rows="10" class="form-control" placeholder="Observations" title="" id="id_observations" disabled>{{tenant.observations}}</textarea></div>
+		<div class="form-group"><div class="checkbox"><label for="id_temporary"><input type="checkbox" name="temporary" class="" id="id_temporary" {% if tenant.temporary %}checked{% endif %} disabled/> Passager</label></div></div>
+		<div class="form-group"><div class="checkbox"><label for="id_leaving"><input type="checkbox" name="leaving" class="" id="id_leaving" {% if tenant.leaving %}checked{% endif %} disabled/> Sur le départ</label></div></div>
+		<h3>Fournitures</h3>
+		<div class="form-group"><div class="checkbox"><label for="id_waterproof_undersheet"><input type="checkbox" name="waterproof_undersheet" class="" id="id_waterproof_undersheet" {% if tenant.waterproof_undersheet %}checked{% endif %} disabled/> Alèse</label></div></div>
+		<div class="form-group"><div class="checkbox"><label for="id_pillow"><input type="checkbox" name="pillow" class="" id="id_pillow" {% if tenant.pillow %}checked{% endif %} disabled /> Oreiller</label></div></div>
+		<div class="form-group"><div class="checkbox"><label for="id_pillowcase"><input type="checkbox" name="pillowcase" class="" id="id_pillowcase" {% if tenant.pillowcase %}checked{% endif %} disabled/> Taie d'oreiller</label></div></div>
+		<div class="form-group"><div class="checkbox"><label for="id_blanket"><input type="checkbox" name="blanket" class="" id="id_blanket" {% if tenant.blanket %}checked{% endif %} disabled/> Couverture</label></div></div>
+		<div class="form-group"><div class="checkbox"><label for="id_sheet"><input type="checkbox" name="sheet" class="" id="id_sheet" {% if tenant.sheet %}checked{% endif %} disabled/> Drap</label></div></div>
 	</div>
-</form>
+</div>
 {% endblock %}

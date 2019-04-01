@@ -102,7 +102,6 @@ class Tenant(models.Model):
         except:
             return False
 
-
 class Room(models.Model):
     class Meta:
         verbose_name = "Chambre"

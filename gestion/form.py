@@ -84,8 +84,28 @@ class RoomForm(forms.ModelForm):
 class LeasingForm(forms.ModelForm):
     class Meta:
         model = Leasing
-        fields = "__all__"
-
+        fields = [
+            "bail",
+            "apl",
+            "payment",
+            "rib",
+            "insuranceDeadline",
+            "contractSigned",
+            "contractDate", 
+            "cautionRib",
+            "idgarant",
+            "payinslip",
+            "tax_notice",
+            "stranger",
+            "caf",
+            "residence_certificate",
+            "check_guarantee",
+            "guarantee",
+            "issue",
+            "missing_documents",
+            "date_of_entry",
+            "date_of_departure"
+        ]
 class LeaveForm(forms.ModelForm):
     class Meta:
         model = Tenant
