@@ -2,10 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import CreateView, ListView, DeleteView, UpdateView, View
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
+from lock_tokens.exceptions import AlreadyLockedError
+from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
+
 
 import os
 
 from .models import Document
+from .forms import DocumentForm
 
 
 class DocumentIndex(ListView):
@@ -43,22 +47,9 @@ class DocumentEdit(UpdateView):
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('documents:index')
-
-    def form_valid(self, form):
-        messages.success(self.request, "Le document a bien été modifié")
-        if(form.has_changed() and "document" in form.changed_data):
-            os.remove(self.get_object().document.path)
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Modification d'un document"
-        context['form_icon'] = "pencil-alt"
-        context['form_button'] = "Modifier le document"
-        context['file'] = True
-        context['active'] = "documents"
-        return context
-
+    success_message = "Le document a bien été modifié"
+    lock_message = "Impossible de modifier le document : il est en cours de modification"
+    context = {"form_title": "Modification d'un document", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "documents", "file": True}
 
 class DocumentDelete(DeleteView):
     model = Document
