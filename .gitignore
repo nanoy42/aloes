@@ -34,3 +34,4 @@ tags
 
 Pipfile
 Pipfile.lock
+.vscode

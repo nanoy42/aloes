@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h2>Locataires sans chambre</h2>
+<div class="responsive-table">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Locataire</th>
+				<th>Chambre réservée</th>
+			</tr>
+		</thead>
+		<tbdoy>
+		{% for tenant in homeless %}
+		<tr>
+			<td><a href="{% url 'gestion:tenantProfile' tenant.pk %}">{{tenant}}</a></td>
+			<td>{% if tenant.has_next_room %}<a href="{% url 'gestion:roomProfile' tenant.nextRoom.pk %}">{{tenant.nextRoom}}{% else %}Pas de chambre reservée{% endif %}</a></td>
+		</tr>
+		{% endfor %}
+		</tbdoy>
+	</table>
+</div>
+{% endblock %}
