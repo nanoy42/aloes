@@ -1,10 +1,12 @@
 import csv
 
+from django.core import management
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
+from django_cron import CronJobBase, Schedule
 from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
 from lock_tokens.exceptions import AlreadyLockedError
 from django.db.models import Q
@@ -742,3 +744,23 @@ def mail_tenants(request):
     tenants_with_room = Tenant.objects.has_room()
     tenants_emails = [tenant.email for tenant in tenants_with_room if tenant.email is not None]
     return render(request, "gestion/mail_tenants.html", {"tenants_emails" : tenants_emails})
+
+########## Backup ##########
+
+def copy_backups():
+    return True
+
+def backup(request):
+    management.call_command('dbbackup')
+    copy_backups()
+    messages.success(request, "La base de données a bien été sauvegardée.")
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+class Backup(CronJobBase):
+    RUN_AT_TIMES = ['18:00']
+    schedule = Schedule(run_at_times=RUN_AT_TIMES)
+    code = 'gestion.Backup'
+
+    def do(self):
+        management.call_command('dbbackup')
+        copy_backups()

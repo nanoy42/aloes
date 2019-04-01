@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'documents',
     'aloes',
     'colorfield',
+    'dbbackup',
+    'django_cron',
     'lock_tokens.apps.LockTokensConfig',
 ]
 
@@ -136,6 +138,9 @@ MEDIA_URL = '/media/'
 MESSAGE_TAGS = {
         messages.ERROR: 'danger'
 }
+
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': '/var/backups/test/'}
 
 LOCK_TOKENS = {
     'TIMEOUT': 300,
