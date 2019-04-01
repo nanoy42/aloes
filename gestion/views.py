@@ -7,6 +7,7 @@ from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
 from lock_tokens.exceptions import AlreadyLockedError
+from django.db.models import Q
 
 from .models import Renovation, Tenant, Leasing, School, Rent, Room, Map
 from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm, selectTenantWNRForm, selectRoomWNTForm, tenantMoveInDirectForm, roomMoveInDirectForm
@@ -22,13 +23,11 @@ def gestionIndex(request):
         if(search_form.cleaned_data['first_name']):
             res = res.filter(actualTenant__first_name__icontains=search_form.cleaned_data['first_name'])
         if(search_form.cleaned_data['name']):
-            res = res.filter(Q(actualTenant_last_name__icontains=search_form.cleaned_data['name']) | Q(actualTenant__first_name__icontains=search_form.cleaned_data['name']))
+            res = res.filter(Q(actualTenant__name__icontains=search_form.cleaned_data['name']) | Q(actualTenant__first_name__icontains=search_form.cleaned_data['name']))
         if(search_form.cleaned_data['room']):
-            res = res.filter(room=search_form.cleaned_data['room'])
+            res = res.filter(room__istartswith=search_form.cleaned_data['room'])
         if(search_form.cleaned_data['lot']):
             res = res.filter(lot=search_form.cleaned_data['lot'])
-        if(search_form.cleaned_data['payment'] != "I"):
-            res = res
         if(search_form.cleaned_data['gender'] != "I"):
             res = res.filter(actualTenant__gender=search_form.cleaned_data['gender'])
         if(search_form.cleaned_data['school']):
@@ -39,10 +38,17 @@ def gestionIndex(request):
             res = res.filter(actualTenant__temporary=False)
         if(search_form.cleaned_data['exclude_empty_rooms']):
             res = res.exclude(actualTenant=None)
+        if(search_form.cleaned_data['renovation']):
+            res = res.filter(renovation=search_form.cleaned_data['renovation'])
         if(search_form.cleaned_data['building'] != "I"):
-            res = filter(lambda room: room.building == search_form.cleaned_data['building'], res.all())
-        else:
-            res = res.all()
+            res = res.filter(room__istartswith=search_form.cleaned_data['building'])
+        if(search_form.cleaned_data['sort']):
+            if(search_form.cleaned_data['sort']=="room"):
+                res=res.order_by("room")
+            if(search_form.cleaned_data['sort']=="first_name"):
+                res=res.order_by("actualTenant__first_name")
+            if(search_form.cleaned_data['sort']=="last_name"):
+                res=res.order_by("actualTenant__name")
     else:
         res = Room.objects.all()
     return render(request, "gestion/gestionIndex.html", {"search_form": search_form, "sidebar": True, "active":"default", "rooms": res})
@@ -511,6 +517,11 @@ def tenantMoveInDirect(request, pk):
     message = "Choisir une chambre vide et la date d'entrée dans la chambre"
     return render(request, "form.html", {"form":form, "form_title": "Attribution d'une chambre à " + str(tenant), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
 
+def homeless_tenants(request):
+    """Display tenants without room."""
+    homeless = Tenant.objects.has_no_room()
+    return render(request, "gestion/homeless_tenants.html", {"homeless": homeless})
+
 ########## Leasings ##########
 
 def leasingProfile(request, pk):
@@ -707,6 +718,7 @@ class MapDelete(DeleteView):
 
 
 ########## Other ##########
+
 def export_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="export.csv"'
@@ -725,3 +737,8 @@ def export_csv(request):
     for tenant in tenants:
         writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
     return response
+
+def mail_tenants(request):
+    tenants_with_room = Tenant.objects.has_room()
+    tenants_emails = [tenant.email for tenant in tenants_with_room if tenant.email is not None]
+    return render(request, "gestion/mail_tenants.html", {"tenants_emails" : tenants_emails})
