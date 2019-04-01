@@ -29,7 +29,7 @@
 				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
 					<a class="dropdown-item" href="{% url 'gestion:createRoom' %}"><i class="fa fa-plus-square"></i> Ajouter une chambre</a>
 					<a class="dropdown-item" href="{% url 'gestion:createTenant' %}"><i class="fa fa-user-plus"></i> Ajouter un locataire</a>
-					<a class="dropdown-item" href="#"><i class="fa fa-users"></i> Afficher les locataires sans chambre</a>
+					<a class="dropdown-item" href="{% url 'gestion:homelessTenants' %}"><i class="fa fa-users"></i> Afficher les locataires sans chambre</a>
 					<div class="dropdown-divider"></div>
 					<a class="dropdown-item" href="{% url 'gestion:exportCSV' %}"><i class="fa fa-file-excel"></i> Exporter les données sous excel</a>
 					<div class="dropdown-divider"></div>

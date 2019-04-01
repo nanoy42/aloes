@@ -38,4 +38,5 @@ urlpatterns = [
     path('indexMap', views.mapIndex, name="indexMap"),
     path('changeRoomMap/<int:pk>', views.ChangeRoomMap.as_view(), name="changeRoomMap"),
     path('exportCSV', views.export_csv, name="exportCSV"),
+    path('homeless_tenants', views.homeless_tenants, name="homelessTenants"),
 ]
