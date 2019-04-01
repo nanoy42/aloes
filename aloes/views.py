@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic.edit import ModelFormMixin
+from lock_tokens.exceptions import AlreadyLockedError
+from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
 
 from documents.models import Document
 from .models import GeneralPreferences
@@ -28,10 +30,19 @@ def about(request):
 
 def homeTextEdit(request):
     text, _ = GeneralPreferences.objects.get_or_create()
+    try:
+        lock_for_session(text, request.session)
+    except AlreadyLockedError:
+        messages.error(request, "Impossible de modifier le texte : il est en modification.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
     form = HomeTextEditForm(request.POST or None, instance = text)
     if(form.is_valid()):
+        if not check_for_session(text, request.session):
+            messages.error(request, "Impossible de modifier le texte : il est en modification.")
+            return redirect(request.META.get('HTTP_REFERER', '/'))
         messages.success(request, "Le texte d'accueil a bien été modifié")
         form.save()
+        unlock_for_session(text, request.session)
         return redirect(reverse('documents:index'))
     return render(request, "form.html", {
         "form": form,

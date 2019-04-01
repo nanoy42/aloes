@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Envoyer un mail à tous les locataires actuels</h3>
+<br>
+Pour envoyer un mail à tous les locataires en copie cachée, cliquez <a href="mailto:aloes@centralesupelec.fr?bcc={% for email in tenants_emails %}{{email}};{% endfor %}">ici</a>. (Peut prendre plusieurs secondes avant de s'afficher)
+{% endblock %}
