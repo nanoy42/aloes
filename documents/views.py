@@ -10,9 +10,11 @@ import os
 
 from .models import Document
 from .forms import DocumentForm
+from aloes.acl import admin_required, superuser_required, AdminRequiredMixin, SuperuserRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 
-class DocumentIndex(ListView):
+class DocumentIndex(ListView, AdminRequiredMixin):
     model = Document
     context_object_name = "documents"
     template_name = "documents/documents_index.html"
@@ -23,7 +25,7 @@ class DocumentIndex(ListView):
         context['active'] = "documents"
         return context
 
-class DocumentCreate(CreateView):
+class DocumentCreate(CreateView, AdminRequiredMixin):
     model = Document
     fields = "__all__"
     template_name = "form.html"
@@ -42,7 +44,7 @@ class DocumentCreate(CreateView):
         context['active'] = "documents"
         return context
 
-class DocumentEdit(UpdateView):
+class DocumentEdit(UpdateView, AdminRequiredMixin):
     model = Document
     fields = "__all__"
     template_name = "form.html"
@@ -51,7 +53,7 @@ class DocumentEdit(UpdateView):
     lock_message = "Impossible de modifier le document : il est en cours de modification"
     context = {"form_title": "Modification d'un document", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "documents", "file": True}
 
-class DocumentDelete(DeleteView):
+class DocumentDelete(DeleteView, AdminRequiredMixin):
     model = Document
     context_object_name = "object_name"
     template_name = "delete.html"
@@ -70,6 +72,7 @@ class DocumentDelete(DeleteView):
         context['active'] = "documents"
         return context
 
+@admin_required
 def DocumentSwitchActive(request, pk):
     document = get_object_or_404(Document, pk=pk)
     document.active = 1 - document.active

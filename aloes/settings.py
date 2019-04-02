@@ -139,6 +139,8 @@ MESSAGE_TAGS = {
         messages.ERROR: 'danger'
 }
 
+LOGIN_URL = '/login'
+
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': '/var/backups/test/'}
 
