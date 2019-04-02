@@ -1,6 +1,0 @@
-{% extends 'base.html' %}
-<div class="responsive-table">
-	<table class="table table-striped">
-
-	</table>
-</div>
