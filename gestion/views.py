@@ -15,7 +15,10 @@ from .models import Renovation, Tenant, Leasing, School, Rent, Room, Map
 from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm, selectTenantWNRForm, selectRoomWNTForm, tenantMoveInDirectForm, roomMoveInDirectForm
 from aloes.utils import LockableUpdateView
 
+from aloes.acl import admin_required, superuser_required, AdminRequiredMixin, SuperuserRequiredMixin
+from django.contrib.auth.decorators import login_required
 
+@admin_required
 def gestionIndex(request):
     search_form = SearchForm(request.GET or None)
     if search_form.is_valid():
@@ -57,12 +60,13 @@ def gestionIndex(request):
 
 ########## Renovations ##########
 
+@admin_required
 def renovationIndex(request):
     search_form = SearchForm()
     renovations = Renovation.objects.all()
     return render(request, "gestion/renovations_index.html", {"renovations": renovations, "sidebar":True, "search_form":search_form, "active":"renovations"})
 
-class RenovationCreate(CreateView):
+class RenovationCreate(CreateView, AdminRequiredMixin):
     model = Renovation
     fields = "__all__"
     template_name = "form.html"
@@ -87,7 +91,7 @@ class RenovationCreate(CreateView):
         context['active'] = 'renovations'
         return context
 
-class RenovationEdit(LockableUpdateView):
+class RenovationEdit(LockableUpdateView, AdminRequiredMixin):
     model = Renovation
     fields = "__all__"
     template_name = "form.html"
@@ -96,7 +100,7 @@ class RenovationEdit(LockableUpdateView):
     lock_message = "Impossible de modifier le niveau de rénovation : il est en cours de modification"
     context = {"form_title": "Modification d'un niveau de rénovation", "form_icon": "pencil-alt", "form_button": "Modifier", "color": True, "active": "renovations"}
     
-class RenovationDelete(DeleteView):
+class RenovationDelete(DeleteView, AdminRequiredMixin):
     model = Renovation
     context_object_name = "object_name"
     template_name = "delete.html"
@@ -116,12 +120,13 @@ class RenovationDelete(DeleteView):
 
 ########## Schools ##########
 
+@admin_required
 def schoolIndex(request):
     search_form = SearchForm()
     schools = School.objects.all()
     return render(request, "gestion/schools_index.html", {"schools": schools, "sidebar":True, "search_form":search_form, "active":"schools"})
 
-class SchoolCreate(CreateView):
+class SchoolCreate(CreateView, AdminRequiredMixin):
     model = School
     fields = "__all__"
     template_name = "form.html"
@@ -144,7 +149,7 @@ class SchoolCreate(CreateView):
         context['active'] = 'schools'
         return context
 
-class SchoolEdit(UpdateView):
+class SchoolEdit(UpdateView, AdminRequiredMixin):
     model = School
     fields = "__all__"
     template_name = "form.html"
@@ -153,7 +158,7 @@ class SchoolEdit(UpdateView):
     lock_message = "Impossible de modifier l'école : elle est en cours de modification"
     context = {"form_title": "Modification d'une école", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "schools"}
 
-class SchoolDelete(DeleteView):
+class SchoolDelete(DeleteView, AdminRequiredMixin):
     model = School
     context_object_name = "object_name"
     template_name = "delete.html"
@@ -173,12 +178,13 @@ class SchoolDelete(DeleteView):
 
 ########## Rents ##########
 
+@admin_required
 def rentIndex(request):
     search_form = SearchForm()
     rents = Rent.objects.all()
     return render(request, "gestion/rents_index.html", {"rents": rents, "sidebar":True, "search_form":search_form, "active":"rents"})
 
-class RentCreate(CreateView):
+class RentCreate(CreateView, AdminRequiredMixin):
     model = Rent
     fields = "__all__"
     template_name = "form.html"
@@ -203,7 +209,7 @@ class RentCreate(CreateView):
         context['active'] = 'rents'
         return context
 
-class RentEdit(UpdateView):
+class RentEdit(UpdateView, AdminRequiredMixin):
     model = Rent
     fields = "__all__"
     template_name = "form.html"
@@ -212,7 +218,7 @@ class RentEdit(UpdateView):
     lock_message = "Impossible de modifier le loyer : il est en cours de modification"
     context = {"form_title": "Modification d'un loyer", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "rents"}
 
-class RentDelete(DeleteView):
+class RentDelete(DeleteView, AdminRequiredMixin):
     model = Rent
     context_object_name = "object_name"
     template_name = "delete.html"
@@ -232,6 +238,7 @@ class RentDelete(DeleteView):
 
 ########## Rooms ##########
 
+@admin_required
 def roomProfile(request, pk):
     search_form = SearchForm()
     room = get_object_or_404(Room, pk=pk)
@@ -263,6 +270,7 @@ def roomProfile(request, pk):
         actualLeasing = None
     return render(request, "gestion/roomProfile.html", {"sidebar": True, "room": room, "search_form": search_form, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
 
+@admin_required
 def edit_room(request, pk):
     search_form = SearchForm()
     room = get_object_or_404(Room, pk=pk)
@@ -308,7 +316,7 @@ def edit_room(request, pk):
         return redirect(reverse('gestion:roomProfile', kwargs={'pk': room.pk}))
     return render(request, "gestion/edit_room.html", {"sidebar": True, "room": room, "search_form": search_form, "roomForm": roomForm, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
 
-class RoomCreate(CreateView):
+class RoomCreate(CreateView, AdminRequiredMixin):
     form_class = CreateRoomForm
     template_name = "form.html"
 
@@ -326,6 +334,7 @@ class RoomCreate(CreateView):
         context['form_button'] = "Créer la chambre"
         return context
 
+@admin_required
 def addNextTenant(request, pk):
     room = get_object_or_404(Room, pk=pk)
     if(room.nextTenant):
@@ -347,6 +356,7 @@ def addNextTenant(request, pk):
     message = "Choisir un locataire pour réserver la chambre"
     return render(request, "form.html", {"form": form, "form_title": "Réservation de la chambre " + str(room), "p": message, "form_button": "Réserver la chambre", "form_icon": "star"})
 
+@admin_required
 def roomMoveInDirect(request, pk):
     room = get_object_or_404(Room, pk=pk)
     if(room.actualTenant):
@@ -368,7 +378,7 @@ def roomMoveInDirect(request, pk):
     message = "Choisir un locataire et la date d'entrée dans la chambre"
     return render(request, "form.html", {"form":form, "form_title": "Location de la chambre " + str(room), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
 
-class ChangeRoomMap(UpdateView):
+class ChangeRoomMap(UpdateView, AdminRequiredMixin):
     model = Room
     fields = ("map",)
     template_name = "form.html"
@@ -383,6 +393,7 @@ class ChangeRoomMap(UpdateView):
 
 ########## Tenants ##########
 
+@admin_required
 def tenantProfile(request, pk):
     search_form = SearchForm()
     tenant = get_object_or_404(Tenant, pk=pk)
@@ -414,6 +425,7 @@ def tenantProfile(request, pk):
         nextLeasing = None
     return render(request, "gestion/tenantProfile.html", {"sidebar": True, "tenant": tenant, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
 
+@admin_required
 def edit_tenant(request, pk):
     search_form = SearchForm()
     tenant = get_object_or_404(Tenant, pk=pk)
@@ -459,7 +471,7 @@ def edit_tenant(request, pk):
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     return render(request, "gestion/edit_tenant.html", {"sidebar": True, "tenant": tenant, "tenantForm": tenantForm, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
 
-class TenantCreate(CreateView):
+class TenantCreate(CreateView, AdminRequiredMixin):
     form_class = CreateTenantForm
     template_name = "form.html"
 
@@ -477,6 +489,7 @@ class TenantCreate(CreateView):
         context['form_button'] = "Créer le locataire"
         return context
 
+@admin_required
 def addNextRoom(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.has_next_room):
@@ -498,6 +511,7 @@ def addNextRoom(request, pk):
     message = "Choisir une chambre non réservée"
     return render(request, "form.html", {"form": form, "form_title": "Réservation pour le locataire " + str(tenant), "p": message, "form_button": "Réserver la chambre", "form_icon": "star"})
 
+@admin_required
 def tenantMoveInDirect(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.has_room):
@@ -519,6 +533,7 @@ def tenantMoveInDirect(request, pk):
     message = "Choisir une chambre vide et la date d'entrée dans la chambre"
     return render(request, "form.html", {"form":form, "form_title": "Attribution d'une chambre à " + str(tenant), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
 
+@admin_required
 def homeless_tenants(request):
     """Display tenants without room."""
     homeless = Tenant.objects.has_no_room()
@@ -526,11 +541,13 @@ def homeless_tenants(request):
 
 ########## Leasings ##########
 
+@admin_required
 def leasingProfile(request, pk):
     search_form = SearchForm()
     leasing = get_object_or_404(Leasing, pk=pk)
     return render(request, "gestion/leasingProfile.html", {"sidebar": True, "leasing": leasing, "search_form": search_form})
 
+@admin_required
 def edit_leasing(request, pk):
     search_form = SearchForm()
     leasing = get_object_or_404(Leasing, pk=pk)
@@ -552,6 +569,7 @@ def edit_leasing(request, pk):
 
 ########## Actions ##########
 
+@admin_required
 def addOneYear(request):
     tenants = Tenant.objects.all()
     for tenant in tenants:
@@ -561,6 +579,7 @@ def addOneYear(request):
     next_url = request.GET.get('next', reverse('home'))
     return redirect(next_url)
 
+@admin_required
 def leave(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.date_of_departure):
@@ -581,6 +600,7 @@ def leave(request, pk):
         return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
     return render(request, "form.html", {"form":leaveForm, "p":message, "form_title":"Faire quitter la résidence", "form_button":"Faire quitter la résidence", "form_icon":"sign-out-alt"})
 
+@admin_required
 def moveOut(request, pk, mode):
     if(mode not in ["tenant", "room"]):
         mode = "tenant"
@@ -611,6 +631,7 @@ def moveOut(request, pk, mode):
             return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
     return render(request, "form.html", {"form": moveOutForm, "p": message, "form_title": form_title, "form_button": form_button, "form_icon": "sign-out-alt"})
 
+@admin_required
 def moveIn(request, pk, mode):
     if(mode not in ["tenant", "room"]):
         mode = "tenant"
@@ -644,6 +665,7 @@ def moveIn(request, pk, mode):
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     return render(request, "form.html", {"form": moveInForm, "p": message, "form_title": "Emménagement d'un locataire", "form_button": "Emménager", "form_icon": "sign-in-alt"})
 
+@admin_required
 def cancelNextRoom(request, pk, mode):
     if(mode not in ["tenant", "room"]):
         mode = "tenant"
@@ -663,16 +685,15 @@ def cancelNextRoom(request, pk, mode):
         messages.success(request, "La prochaine chambre a été annulée")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":room.pk}))
 
-
 ########## Maps ##########
 
-
+@admin_required
 def mapIndex(request):
     search_form = SearchForm()
     maps = Map.objects.all()
     return render(request, "gestion/maps_index.html", {"maps": maps, "sidebar":True, "search_form":search_form, "active":"maps"})
 
-class MapCreate(CreateView):
+class MapCreate(CreateView, AdminRequiredMixin):
     model = Map
     fields = "__all__"
     template_name = "form.html"
@@ -691,7 +712,7 @@ class MapCreate(CreateView):
         context['active'] = 'maps'
         return context
 
-class MapEdit(UpdateView):
+class MapEdit(UpdateView, AdminRequiredMixin):
     model = Map
     fields = "__all__"
     template_name = "form.html"
@@ -700,7 +721,7 @@ class MapEdit(UpdateView):
     lock_message = "Impossible de modifier le plan : il est en cours de modification"
     context = {"form_title": "Modification d'un plan", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "maps"}
 
-class MapDelete(DeleteView):
+class MapDelete(DeleteView, AdminRequiredMixin):
     model = Map
     context_object_name = "object_name"
     template_name = "delete.html"
@@ -721,6 +742,7 @@ class MapDelete(DeleteView):
 
 ########## Other ##########
 
+@admin_required
 def export_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="export.csv"'
@@ -740,6 +762,7 @@ def export_csv(request):
         writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
     return response
 
+@admin_required
 def mail_tenants(request):
     tenants_with_room = Tenant.objects.has_room()
     tenants_emails = [tenant.email for tenant in tenants_with_room if tenant.email is not None]
