@@ -3,7 +3,6 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.views.generic.edit import ModelFormMixin
 from lock_tokens.exceptions import AlreadyLockedError
 from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
@@ -13,6 +12,7 @@ from .models import GeneralPreferences
 from .form import LoginForm, ChangePasswordForm, HomeTextEditForm
 from .acl import admin_required, superuser_required, AdminRequiredMixin, SuperuserRequiredMixin
 from django.contrib.auth.decorators import login_required
+from .utils import ImprovedCreateView, ImprovedUpdateView, ImprovedDeleteView
 
 def home(request):
     """
@@ -98,63 +98,52 @@ def indexAccounts(request):
     users = User.objects.all()
     return render(request, "index_accounts.html", {"users": users})
 
-class UserCreate(CreateView, SuperuserRequiredMixin):
+class UserCreate(ImprovedCreateView, SuperuserRequiredMixin):
     model = User
     fields = ('username', 'first_name', 'last_name', 'email')
     template_name = "form.html"
     success_url = reverse_lazy('indexAccounts')
+    success_message = "Le compte a bien été créé. Par défaut le mot de passe est le nom d'utilisateur."
+    context = {
+        "form_title": "Création d'un nouveau compte",
+        "form_icon": "star",
+        "form_button": "Créer le compte",
+        "active": "accounts",
+    }
 
     def form_valid(self, form):
         self.object = form.save()
         self.object.set_password(self.object.username)
         self.object.is_staff = True
         self.object.save()
-        messages.success(self.request, "Le compte a bien été créé. Par défaut le mot de passe est le nom d'utilisateur")
+        messages.success(self.request, self.success_message)
         return super(ModelFormMixin, self).form_valid(form)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'un nouveau compte"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer le compte"
-        context['active'] = 'accounts'
-        return context
-
-class UserEdit(UpdateView, SuperuserRequiredMixin):
+class UserEdit(ImprovedUpdateView, SuperuserRequiredMixin):
     model = User
     fields = ('username', 'first_name', 'last_name', 'email')
     template_name = "form.html"
     success_url = reverse_lazy('indexAccounts')
+    success_message = "Le compte a bien été modifié"
+    context = {
+        "form_title": "Modification d'un compte",
+        "form_icon": "pencil-alt",
+        "form_button": "Modifier le compte",
+        "active": "accounts",
+    }
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le compte a bien été modifié")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Modification d'un compte"
-        context['form_icon'] = "pencil-alt"
-        context['form_button'] = "Modifier le compte"
-        context['active'] = 'accounts'
-        return context
-
-class UserDelete(DeleteView, SuperuserRequiredMixin):
+class UserDelete(ImprovedDeleteView, SuperuserRequiredMixin):
     model = User
     context_object_name = "object_name"
     template_name = "delete.html"
     success_url = reverse_lazy('indexAccounts')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "Le compte a bien été supprimé")
-        return super().delete(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['delete_title'] = "Suppression d'un compte"
-        context['delete_object'] = "le compte"
-        context['delete_link'] = "indexAccounts"
-        context['active'] = 'accounts'
-        return context
+    success_message = "Le compte a bien été supprimé"
+    context = {
+        "delete_title": "Suppression d'un compte",
+        "delete_object": "le compte",
+        "delete_link": "indexAccounts",
+        "active": "accounts",
+    }
 
 @superuser_required
 def resetPassword(request, pk):

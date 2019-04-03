@@ -3,7 +3,6 @@ import csv
 from django.core import management
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django_cron import CronJobBase, Schedule
@@ -13,7 +12,7 @@ from django.db.models import Q
 
 from .models import Renovation, Tenant, Leasing, School, Rent, Room, Map
 from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm, selectTenantWNRForm, selectRoomWNTForm, tenantMoveInDirectForm, roomMoveInDirectForm
-from aloes.utils import LockableUpdateView
+from aloes.utils import LockableUpdateView, ImprovedCreateView, ImprovedUpdateView, ImprovedDeleteView
 
 from aloes.acl import admin_required, superuser_required, AdminRequiredMixin, SuperuserRequiredMixin
 from django.contrib.auth.decorators import login_required
@@ -66,30 +65,24 @@ def renovationIndex(request):
     renovations = Renovation.objects.all()
     return render(request, "gestion/renovations_index.html", {"renovations": renovations, "sidebar":True, "search_form":search_form, "active":"renovations"})
 
-class RenovationCreate(CreateView, AdminRequiredMixin):
+class RenovationCreate(ImprovedCreateView, AdminRequiredMixin):
     model = Renovation
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexRenovation')
-
+    success_message = "Le niveau de rénovation a bien été créé"
+    context = {
+        "form_title": "Création d'un nouveau niveau de rénovation",
+        "form_icon": "star",
+        "form_button": "Créer le niveau de rénovation",
+        "color": True,
+        "active": "renovations",
+    }
     class Meta:
         labels = {
             'name': 'Nom ou niveau',
             'color': 'Couleur :'
         }
-
-    def form_valid(self, form):
-        messages.success(self.request, "Le niveau de rénovation a bien été créé")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'un nouveau niveau de rénovation"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer le niveau de rénovation"
-        context['color'] = True
-        context['active'] = 'renovations'
-        return context
 
 class RenovationEdit(LockableUpdateView, AdminRequiredMixin):
     model = Renovation
@@ -100,23 +93,18 @@ class RenovationEdit(LockableUpdateView, AdminRequiredMixin):
     lock_message = "Impossible de modifier le niveau de rénovation : il est en cours de modification"
     context = {"form_title": "Modification d'un niveau de rénovation", "form_icon": "pencil-alt", "form_button": "Modifier", "color": True, "active": "renovations"}
     
-class RenovationDelete(DeleteView, AdminRequiredMixin):
+class RenovationDelete(ImprovedDeleteView, AdminRequiredMixin):
     model = Renovation
     context_object_name = "object_name"
     template_name = "delete.html"
     success_url = reverse_lazy('gestion:indexRenovation')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "Le niveau de rénovation a bien été supprimé")
-        return super().delete(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['delete_title'] = "Suppression d'un niveau de rénovation"
-        context['delete_object'] = "le niveau de rénovation"
-        context['delete_link'] = "gestion:indexRenovation"
-        context['active'] = 'renovations'
-        return context
+    success_message = "Le niveau de rénovation a bien été supprimé"
+    context = {
+        "delete_title": "Supression d'un niveau de rénovation",
+        "delete_object": "le niveau de rénovation",
+        "delete_link": "gestion:indexRenovation",
+        "active": "renovations"
+    }
 
 ########## Schools ##########
 
@@ -126,30 +114,24 @@ def schoolIndex(request):
     schools = School.objects.all()
     return render(request, "gestion/schools_index.html", {"schools": schools, "sidebar":True, "search_form":search_form, "active":"schools"})
 
-class SchoolCreate(CreateView, AdminRequiredMixin):
+class SchoolCreate(ImprovedCreateView, AdminRequiredMixin):
     model = School
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexSchool')
-
+    success_message = "L'école a bien été créée"
+    context = {
+        "form_title": "Création d'une nouvelle école",
+        "form_icon": "star",
+        "form_button": "Créer l'école",
+        "active": "schools",
+    }
     class Meta:
         labels = {
             'name': 'Nom de l\'école'
         }
 
-    def form_valid(self, form):
-        messages.success(self.request, "L'école a bien été créée")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'une nouvelle école"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer l'école"
-        context['active'] = 'schools'
-        return context
-
-class SchoolEdit(UpdateView, AdminRequiredMixin):
+class SchoolEdit(LockableUpdateView, AdminRequiredMixin):
     model = School
     fields = "__all__"
     template_name = "form.html"
@@ -158,23 +140,18 @@ class SchoolEdit(UpdateView, AdminRequiredMixin):
     lock_message = "Impossible de modifier l'école : elle est en cours de modification"
     context = {"form_title": "Modification d'une école", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "schools"}
 
-class SchoolDelete(DeleteView, AdminRequiredMixin):
+class SchoolDelete(ImprovedDeleteView, AdminRequiredMixin):
     model = School
     context_object_name = "object_name"
     template_name = "delete.html"
     success_url = reverse_lazy('gestion:indexSchool')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "L'école a bien été supprimée")
-        return super().delete(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['delete_title'] = "Suppression d'une école"
-        context['delete_object'] = "l'école"
-        context['delete_link'] = "gestion:indexSchool"
-        context['active'] = 'schools'
-        return context
+    success_message = "L'école a bien été supprimée"
+    context = {
+        "delete_title": "Suppression d'une école",
+        "delete_object": "l'école",
+        "delete_link": "gestion:indexSchool",
+        "active": "schools"
+    }
 
 ########## Rents ##########
 
@@ -184,32 +161,25 @@ def rentIndex(request):
     rents = Rent.objects.all()
     return render(request, "gestion/rents_index.html", {"rents": rents, "sidebar":True, "search_form":search_form, "active":"rents"})
 
-class RentCreate(CreateView, AdminRequiredMixin):
+class RentCreate(ImprovedCreateView, AdminRequiredMixin):
     model = Rent
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexRent')
-
+    success_message = "Le loyer a bien été créé"
+    context = {
+        "form_title": "Création d'un nouveau loyer",
+        "form_icon": "star",
+        "form_button": "Créer le loyer",
+        "active": "rents"
+    }
     class Meta:
         labels = {
             'type': 'Nom du loyer',
             'rent': 'Loyer',
         }
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le loyer a bien été créé")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'un nouveau loyer"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer le loyer"
-        context['color'] = True
-        context['active'] = 'rents'
-        return context
-
-class RentEdit(UpdateView, AdminRequiredMixin):
+class RentEdit(LockableUpdateView, AdminRequiredMixin):
     model = Rent
     fields = "__all__"
     template_name = "form.html"
@@ -218,23 +188,18 @@ class RentEdit(UpdateView, AdminRequiredMixin):
     lock_message = "Impossible de modifier le loyer : il est en cours de modification"
     context = {"form_title": "Modification d'un loyer", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "rents"}
 
-class RentDelete(DeleteView, AdminRequiredMixin):
+class RentDelete(ImprovedDeleteView, AdminRequiredMixin):
     model = Rent
     context_object_name = "object_name"
     template_name = "delete.html"
     success_url = reverse_lazy('gestion:indexRent')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "Le loyer a bien été supprimé")
-        return super().delete(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['delete_title'] = "Suppression d'un loyer"
-        context['delete_object'] = "le loyer"
-        context['delete_link'] = "gestion:indexRent"
-        context['active'] = 'rents'
-        return context
+    success_message = "Le loyer a bien été supprimé"
+    context = {
+        "delete_title": "Suppresion d'un loyer",
+        "delete_object": "le loyer",
+        "delete_link": "gestion:indexRent",
+        "active": "rents"
+    }
 
 ########## Rooms ##########
 
@@ -316,23 +281,17 @@ def edit_room(request, pk):
         return redirect(reverse('gestion:roomProfile', kwargs={'pk': room.pk}))
     return render(request, "gestion/edit_room.html", {"sidebar": True, "room": room, "search_form": search_form, "roomForm": roomForm, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
 
-class RoomCreate(CreateView, AdminRequiredMixin):
+class RoomCreate(ImprovedCreateView, AdminRequiredMixin):
     form_class = CreateRoomForm
     template_name = "form.html"
-
+    success_message = "La chambre a bien été créée"
+    context = {
+        "form_title": "Création d'une nouvelle chambre",
+        "form_icon": "star",
+        "form_button": "Créer la chambre"
+    }
     def get_success_url(self, **kwargs):
         return reverse("gestion:roomProfile", kwargs={'pk': self.object.pk})
-
-    def form_valid(self, form):
-        messages.success(self.request, "La chambre a bien été créée")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'une nouvelle chambre"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer la chambre"
-        return context
 
 @admin_required
 def addNextTenant(request, pk):
@@ -378,7 +337,7 @@ def roomMoveInDirect(request, pk):
     message = "Choisir un locataire et la date d'entrée dans la chambre"
     return render(request, "form.html", {"form":form, "form_title": "Location de la chambre " + str(room), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
 
-class ChangeRoomMap(UpdateView, AdminRequiredMixin):
+class ChangeRoomMap(LockableUpdateView, AdminRequiredMixin):
     model = Room
     fields = ("map",)
     template_name = "form.html"
@@ -471,23 +430,17 @@ def edit_tenant(request, pk):
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     return render(request, "gestion/edit_tenant.html", {"sidebar": True, "tenant": tenant, "tenantForm": tenantForm, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
 
-class TenantCreate(CreateView, AdminRequiredMixin):
+class TenantCreate(ImprovedCreateView, AdminRequiredMixin):
     form_class = CreateTenantForm
     template_name = "form.html"
-
+    success_message = "Le locataire a bien été créé"
+    context = {
+        "form_title": "Création d'un nouveau locataire",
+        "form_icon": "star",
+        "form_button": "Créer le locataire"
+    }
     def get_success_url(self, **kwargs):
         return reverse("gestion:tenantProfile", kwargs={'pk': self.object.pk})
-
-    def form_valid(self, form):
-        messages.success(self.request, "Le locataire a bien été créé")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'un nouveau locataire"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer le locataire"
-        return context
 
 @admin_required
 def addNextRoom(request, pk):
@@ -693,26 +646,21 @@ def mapIndex(request):
     maps = Map.objects.all()
     return render(request, "gestion/maps_index.html", {"maps": maps, "sidebar":True, "search_form":search_form, "active":"maps"})
 
-class MapCreate(CreateView, AdminRequiredMixin):
+class MapCreate(ImprovedCreateView, AdminRequiredMixin):
     model = Map
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexMap')
+    success_message = "Le plan a bien été créé"
+    context = {
+        "form_title": "Création d'un nouveau plan",
+        "form_icon": "star",
+        "form_button": "Créer le plan",
+        "file": True,
+        "active": "maps"
+    }
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le plan a bien été créé")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'un nouveau plan"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer le plan"
-        context['file'] = True
-        context['active'] = 'maps'
-        return context
-
-class MapEdit(UpdateView, AdminRequiredMixin):
+class MapEdit(LockableUpdateView, AdminRequiredMixin):
     model = Map
     fields = "__all__"
     template_name = "form.html"
@@ -721,23 +669,18 @@ class MapEdit(UpdateView, AdminRequiredMixin):
     lock_message = "Impossible de modifier le plan : il est en cours de modification"
     context = {"form_title": "Modification d'un plan", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "maps"}
 
-class MapDelete(DeleteView, AdminRequiredMixin):
+class MapDelete(ImprovedDeleteView, AdminRequiredMixin):
     model = Map
     context_object_name = "object_name"
     template_name = "delete.html"
     success_url = reverse_lazy('gestion:indexMap')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "Le plan a bien été supprimé")
-        return super().delete(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['delete_title'] = "Suppression d'un plan"
-        context['delete_object'] = "le plan"
-        context['delete_link'] = "gestion:indexMap"
-        context['active'] = 'maps'
-        return context
+    success_message = "Le plan a bien été supprimé"
+    context = {
+        "delete_title": "Suppression d'un plan",
+        "delete_object": "le plan",
+        "delete_link": "gestion:indexMap",
+        "active" : "maps"
+    }
 
 
 ########## Other ##########
