@@ -1,10 +1,45 @@
-from django.views.generic import UpdateView
+from django.views.generic import CreateView, UpdateView, DeleteView
 from lock_tokens.exceptions import AlreadyLockedError
 from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
 
+class ImprovedCreateView(CreateView):
+    default_success_message = "La création a bien été effectuée"
+    default_context = {}
+
+    def form_valid(self, form):
+        messages.success(self.request, getattr(self, 'success_message', self.default_success_message))
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return {**context, **getattr(self, 'context', self.default_context)}
+
+class ImprovedUpdateView(UpdateView):
+    default_success_message = "Les modifications ont bien été enregistrées."
+    default_context = {}
+
+    def form_valid(self, form):
+        messages.success(self.request, getattr(self, 'sucess_message', self.default_success_message))
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return {**context, **getattr(self, 'context', self.default_context)}
+
+class ImprovedDeleteView(DeleteView):
+    default_success_message = "La suppression a bien été effectuée"
+    default_context = {}
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, getattr(self, 'success_message', self.default_success_message))
+        return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return {**context, **getattr(self, 'context', self.default_context)}
 
 class LockableUpdateView(UpdateView):
     default_lock_message = "Impossible d'acceder à la page : l'objet est en cours de modification."
