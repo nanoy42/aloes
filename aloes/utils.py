@@ -9,6 +9,13 @@ class ImprovedCreateView(CreateView):
     default_success_message = "La création a bien été effectuée"
     default_context = {}
 
+    def post(self, request, *args, **kwargs):
+        if 'cancel' in self.request.POST:
+            messages.success(self.request, "Demande annulée")
+            return redirect(self.request.POST.get('cancel') or "home")
+        else:
+            super().post(self, request, *args, **kwargs)
+
     def form_valid(self, form):
         messages.success(self.request, getattr(self, 'success_message', self.default_success_message))
         return super().form_valid(form)
@@ -20,6 +27,13 @@ class ImprovedCreateView(CreateView):
 class ImprovedUpdateView(UpdateView):
     default_success_message = "Les modifications ont bien été enregistrées."
     default_context = {}
+
+    def post(self, request, *args, **kwargs):
+        if 'cancel' in self.request.POST:
+            messages.success(self.request, "Demande annulée")
+            return redirect(self.request.POST.get('cancel') or "home")
+        else:
+            super().post(self, request, *args, **kwargs)
 
     def form_valid(self, form):
         messages.success(self.request, getattr(self, 'sucess_message', self.default_success_message))
@@ -60,13 +74,18 @@ class LockableUpdateView(UpdateView):
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        if 'cancel' in request.POST:
+            messages.success(self.request, "Demande annulée")
+            if self.lock(request):
+                unlock_for_session(self.get_object(), self.request.session)
+            return redirect(self.request.POST.get('cancel') or "home")
         if not self.lock(request):
+            messages.error(request, getattr(self, 'lock_message', self.default_lock_message))
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         if not check_for_session(self.get_object(), self.request.session):
-            messages.error(request, getattr(self, 'lock_message', self.default_lock_message))
             return redirect(request.META.get('HTTP_REFERER', '/'))
         messages.success(self.request, getattr(self, 'success_message', self.default_success_message))
         self.object = form.save()
