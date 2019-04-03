@@ -271,14 +271,19 @@ def edit_room(request, pk):
     else:
         nextLeasing = None
         actualLeasing = None
-    if(roomForm.is_valid()):
-        if not check_for_session(room, request.session):
-            messages.error(request, "Impossible de modifier la chambre : elle est en cours de modification.")
-            return redirect(request.META.get('HTTP_REFERER', '/'))
-        roomForm.save()
-        messages.success(request, "Les modifications ont bien été enregistrées")
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
         unlock_for_session(room, request.session)
-        return redirect(reverse('gestion:roomProfile', kwargs={'pk': room.pk}))
+        return redirect(request.POST.get('cancel') or "home")
+    else:
+        if(roomForm.is_valid()):
+            if not check_for_session(room, request.session):
+                messages.error(request, "Impossible de modifier la chambre : elle est en cours de modification.")
+                return redirect(request.META.get('HTTP_REFERER', '/'))
+            roomForm.save()
+            messages.success(request, "Les modifications ont bien été enregistrées")
+            unlock_for_session(room, request.session)
+            return redirect(reverse('gestion:roomProfile', kwargs={'pk': room.pk}))
     return render(request, "gestion/edit_room.html", {"sidebar": True, "room": room, "search_form": search_form, "roomForm": roomForm, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
 
 class RoomCreate(ImprovedCreateView, AdminRequiredMixin):
@@ -347,8 +352,6 @@ class ChangeRoomMap(LockableUpdateView, AdminRequiredMixin):
 
     def get_success_url(self, **kwargs):
         return reverse("gestion:roomProfile", kwargs={'pk': self.object.pk})
-
-
 
 ########## Tenants ##########
 
@@ -420,14 +423,19 @@ def edit_tenant(request, pk):
     else:
         actualLeasing = None
         nextLeasing = None
-    if(tenantForm.is_valid()):
-        if not check_for_session(tenant, request.session):
-            messages.error(request, "Impossible de modifier le locataire : il est en cours de modification.")
-            return redirect(request.META.get('HTTP_REFERER', '/'))
-        tenantForm.save()
-        messages.success(request, "Les modifications ont été enregistrées")
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
         unlock_for_session(tenant, request.session)
-        return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
+        return redirect(request.POST.get('cancel') or "home")
+    else:
+        if(tenantForm.is_valid()):
+            if not check_for_session(tenant, request.session):
+                messages.error(request, "Impossible de modifier le locataire : il est en cours de modification.")
+                return redirect(request.META.get('HTTP_REFERER', '/'))
+            tenantForm.save()
+            messages.success(request, "Les modifications ont été enregistrées")
+            unlock_for_session(tenant, request.session)
+            return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     return render(request, "gestion/edit_tenant.html", {"sidebar": True, "tenant": tenant, "tenantForm": tenantForm, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
 
 class TenantCreate(ImprovedCreateView, AdminRequiredMixin):
@@ -510,14 +518,19 @@ def edit_leasing(request, pk):
         messages.error(request, "Impossible de modifier le dossier : il est en cours de modification.")
         return redirect(request.META.get('HTTP_REFERER', '/'))
     leasingForm = LeasingForm(request.POST or None, instance=leasing)
-    if(leasingForm.is_valid()):
-        if not check_for_session(leasing, request.session):
-            messages.error(request, "Impossible de modifier le dossier : il est en cours de modification.")
-            return redirect(request.META.get('HTTP_REFERER', '/'))
-        leasingForm.save()
-        messages.success(request, "Les modifications ont bien été enregistrées")
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
         unlock_for_session(leasing, request.session)
-        return redirect(reverse('gestion:leasingProfile', kwargs={'pk': leasing.pk}))
+        return redirect(request.POST.get('cancel') or "home")
+    else:
+        if(leasingForm.is_valid()):
+            if not check_for_session(leasing, request.session):
+                messages.error(request, "Impossible de modifier le dossier : il est en cours de modification.")
+                return redirect(request.META.get('HTTP_REFERER', '/'))
+            leasingForm.save()
+            messages.success(request, "Les modifications ont bien été enregistrées")
+            unlock_for_session(leasing, request.session)
+            return redirect(reverse('gestion:leasingProfile', kwargs={'pk': leasing.pk}))
     return render(request, "gestion/edit_leasing.html", {"sidebar": True, "leasing": leasing, "leasingForm": leasingForm, "search_form": search_form})
 
 ########## Actions ##########

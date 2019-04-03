@@ -5,7 +5,8 @@
 </h3>
 <form method="post" action="">
 	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-		<button type="submit" class="btn btn-primary">Sauvegarder</button>
+		<button type="submit" class="btn btn-primary" name="submit" value="submit">Sauvegarder</button>
+		<button type="submit" class="btn btn-danger" name="cancel" value="{{request.META.HTTP_REFERER}}">Annuler</button>
 	</div>
 	<br><br>
 	{% csrf_token %}
@@ -49,26 +50,26 @@
 				<tbdoy>
 					<tr>
 						<td>
-							{% if nextLeasing %}<a href="{% url 'gestion:tenantProfile' nextLeasing.tenant.pk %}">{{nextLeasing.tenant}}</a> (Prochain locataire){% else %}Pas de prochain locataire (<a href="{% url 'gestion:addNextTenant' room.pk %}">prévoir un prochain locataire</a>){% endif %}
+							{% if nextLeasing %}{{nextLeasing.tenant}} (Prochain locataire){% else %}Pas de prochain locataire{% endif %}
 						</td>
 						<td></td>
 						<td></td>
-						<td>{% if nextLeasing %}<a href="{% url 'gestion:leasingProfile' nextLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
+						<td>{% if nextLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
 					</tr>
 					<tr>
 						<td>
-							{% if actualLeasing %}<a href="{% url 'gestion:tenantProfile' actualLeasing.tenant.pk %}">{{actualLeasing.tenant}}</a> (Locataire actuel){% else %}Chambre vide (<a href="{% url 'gestion:roomMoveInDirect' room.pk %}">Enménager un locataire</a>){% endif %}
+							{% if actualLeasing %}{{actualLeasing.tenant}} (Locataire actuel){% else %}Chambre vide{% endif %}
 						</td>
 						<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
 						<td></td>
-						<td>{% if actualLeasing %}<a href="{% url 'gestion:leasingProfile' actualLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
+						<td>{% if actualLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
 					</tr>
 					{% for leasing in leasings %}
 					<tr>
-						<td><a href="{% url 'gestion:tenantProfile' leasing.tenant.pk %}">{{leasing.tenant}}</a></td>
+						<td>{{leasing.tenant}}</td>
 						<td>{{leasing.date_of_entry}}</td>
 						<td>{{leasing.date_of_departure}}</td>
-						<td><a href="{% url 'gestion:leasingProfile' leasing.pk %}"><i class="fa fa-folder-open"></i></a></td>
+						<td><i class="fa fa-folder-open"></i></td>
 					</tr>
 					{% endfor %}
 				</tbody>
