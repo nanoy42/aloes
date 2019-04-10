@@ -67,7 +67,8 @@ def loginView(request):
         "form": form,
         "form_title": "Connexion",
         "form_icon": "sign-in-alt",
-        "form_button": "Se connecter"
+        "form_button": "Se connecter",
+        "cancel": False
     })
 
 @login_required

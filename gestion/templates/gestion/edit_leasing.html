@@ -5,15 +5,16 @@
 <form method="post" action="">
 	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
 		<button type="submit" class="btn btn-primary">Sauvegarder</button>
+		<button type="submit" class="btn btn-danger" name="cancel" value="{{request.META.HTTP_REFERER}}">Annuler</button>
 	</div>
 	<br><br>
 	{% csrf_token %}
 	<div class="row">
 		<div class="col">
-			Locataire : <a href="{% url 'gestion:tenantProfile' leasing.tenant.pk %}">{{leasing.tenant}}</a>
+			Locataire : {{leasing.tenant}}
 		</div>
 		<div class="col">
-			Chambre : <a href="{% url 'gestion:roomProfile' leasing.room.pk %}">{{leasing.room}}</a>
+			Chambre : {{leasing.room}}
 		</div>
 	</div>
 	<div class="row">

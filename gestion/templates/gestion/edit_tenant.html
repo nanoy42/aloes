@@ -5,6 +5,7 @@
 <form method="post" action="">
 	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
 		<button type="submit" class="btn btn-primary">Sauvegarder</button>
+		<button type="submit" class="btn btn-danger" name="cancel" value="{{request.META.HTTP_REFERER}}">Annuler</button>
 	</div>
 	<br><br>
 	{% csrf_token %}
@@ -109,26 +110,26 @@
 				<tbody>
 					<tr>
 						<td>
-							{% if nextLeasing %}<a href="{% url 'gestion:roomProfile' nextLeasing.room.pk %}">{{nextLeasing.room}}</a> (Prochaine chambre){% else %} Pas de prochaine chambre (<a href="{% url 'gestion:addNextRoom' tenant.pk %}">Prévoir une prochaine chambre</a>){% endif %}
+							{% if nextLeasing %}{{nextLeasing.room}} (Prochaine chambre){% else %} Pas de prochaine chambre{% endif %}
 						</td>
 						<td></td>
 						<td></td>
-						<td>{% if nextLeasing %}<a href="{% url 'gestion:leasingProfile' nextLeasing.pk %}"><i class="fa fa-folder-open"></i>{% endif %}</td>
+						<td>{% if nextLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
 					</tr>
 					<tr>
 						<td>
-							{% if actualLeasing %}<a href="{% url 'gestion:roomProfile' actualLeasing.room.pk %}">{{actualLeasing.room}}</a> (Chambre actuelle){% else %}Pas de chambre actuellement (<a href="{% url 'gestion:tenantMoveInDirect' tenant.pk %}">Attribuer une chambre</a>{% endif %}
+							{% if actualLeasing %}{{actualLeasing.room}} (Chambre actuelle){% else %}Pas de chambre actuellement{% endif %}
 						</td>
 						<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
 						<td></td>
-						<td>{% if actualLeasing %}<a href="{% url 'gestion:leasingProfile' actualLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
+						<td>{% if actualLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
 					</tr>
 					{% for leasing in leasings %}
 					<tr>
-						<td><a href="{% url 'gestion:roomProfile' leasing.room.pk %}">{{leasing.room}}</a></td>
+						<td>{{leasing.room}}</td>
 						<td>{{leasing.date_of_entry}}</td>
 						<td>{{leasing.date_of_departure}}</td>
-						<td><a href="{% url 'gestion:leasingProfile' leasing.pk %}"><i class="fa fa-folder-open"></i></a></td>
+						<td><i class="fa fa-folder-open"></i></td>
 					</tr>
 					{% endfor %}
 				</tbody>
