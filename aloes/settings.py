@@ -25,7 +25,7 @@ SECRET_KEY = '$5j$zb)ok8ao$+8-8c_wbi*ieq(&+g0vaq3c@b#(tow_r%o__y'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'documents',
     'aloes',
     'colorfield',
+    'dbbackup',
+    'django_cron',
+    'lock_tokens.apps.LockTokensConfig',
 ]
 
 MIDDLEWARE = [
@@ -134,4 +137,13 @@ MEDIA_URL = '/media/'
 
 MESSAGE_TAGS = {
         messages.ERROR: 'danger'
+}
+
+LOGIN_URL = '/login'
+
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': '/var/backups/test/'}
+
+LOCK_TOKENS = {
+    'TIMEOUT': 300,
 }

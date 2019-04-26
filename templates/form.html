@@ -9,6 +9,10 @@
 	{% csrf_token %}
 	<p>{{p}}</p>
 	{% bootstrap_form form %}
-	<button type="submit" class="btn btn-primary"><i class="fa fa-{{form_icon}}"></i> {{form_button}}</button>
+	<button type="submit" class="btn btn-primary" name="submit" value="submit"><i class="fa fa-{{form_icon}}"></i> {{form_button}}</button>
+	{% if cancel != False %}
+	<button type="sumbit" class="btn btn-danger" style="float:right" name="cancel" value="{{request.META.HTTP_REFERER}}" formnovalidate><i class="fa fa-times"></i> Annuler</button>
+	{% endif %}
 </form>
+<br><br>
 {% endblock %}

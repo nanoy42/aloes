@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block content%}
+<h3>{{tenant}}</h3>
+<form method="post" action="">
+	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+		<button type="submit" class="btn btn-primary">Sauvegarder</button>
+		<button type="submit" class="btn btn-danger" name="cancel" value="{{request.META.HTTP_REFERER}}">Annuler</button>
+	</div>
+	<br><br>
+	{% csrf_token %}
+	<div class="row">
+		<div class="col">
+			<h4>Informations générales</h4>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.first_name %}
+				</div>
+				<div class="col">
+					{% bootstrap_field tenantForm.name %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.gender %}
+				</div>
+				<div class="col">
+					{% bootstrap_field tenantForm.email %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.cellphone %}
+				</div>
+				<div class="col">
+					{% bootstrap_field tenantForm.phone %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.school %}
+				</div>
+				<div class="col">
+					{% bootstrap_field tenantForm.school_year %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.date_of_entry %}
+				</div>
+				<div class="col">
+					{% if tenant.date_of_departure %}
+					{% bootstrap_field tenantForm.date_of_departure %}
+					{% else %}
+					Utiliser la fonction "Quitter la résidence" pour avoir accès à la date de départ
+					{% endif %}
+				</div>
+			</div>
+			<h4>Naissance</h4>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.birthday %}
+				</div>
+				<div class="col">
+					{% bootstrap_field tenantForm.birthcity %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.birthdepartement %}
+				</div>
+				<div class="col">
+					{% bootstrap_field tenantForm.birthcountry %}
+				</div>
+			</div>
+			<h4>Adresse</h4>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.street_number %}
+				</div>
+				<div class="col">
+					{% bootstrap_field tenantForm.street %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.zipcode %}
+				</div>
+				<div class="col">
+					{% bootstrap_field tenantForm.city %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field tenantForm.country %}
+				</div>
+			</div>
+		</div>
+		<div class="col">
+			<h4>Chambres</h4>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Chambre</th>
+						<th>Date d'entrée</th>
+						<th>Date de sortie</th>
+						<th>Dossier</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							{% if nextLeasing %}{{nextLeasing.room}} (Prochaine chambre){% else %} Pas de prochaine chambre{% endif %}
+						</td>
+						<td></td>
+						<td></td>
+						<td>{% if nextLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
+					</tr>
+					<tr>
+						<td>
+							{% if actualLeasing %}{{actualLeasing.room}} (Chambre actuelle){% else %}Pas de chambre actuellement{% endif %}
+						</td>
+						<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
+						<td></td>
+						<td>{% if actualLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
+					</tr>
+					{% for leasing in leasings %}
+					<tr>
+						<td>{{leasing.room}}</td>
+						<td>{{leasing.date_of_entry}}</td>
+						<td>{{leasing.date_of_departure}}</td>
+						<td><i class="fa fa-folder-open"></i></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<h3>Observations</h3>
+			{% bootstrap_field tenantForm.observations %}
+			{% bootstrap_field tenantForm.temporary %}
+			{% bootstrap_field tenantForm.leaving %}
+			<h3>Fournitures</h3>
+			{% bootstrap_field tenantForm.waterproof_undersheet %}
+			{% bootstrap_field tenantForm.pillow %}
+			{% bootstrap_field tenantForm.pillowcase %}
+			{% bootstrap_field tenantForm.blanket %}
+			{% bootstrap_field tenantForm.sheet %}
+		</div>
+	</div>
+</form>
+{% endblock %}

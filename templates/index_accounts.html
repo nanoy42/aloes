@@ -19,16 +19,16 @@
 		<tr>
 			<td>{{ user.last_name }}</td>
 			<td>{{ user.first_name }}</td>
-			<td>{{ user.username}}</td>
+			<td>{{ user.username }}</td>
 			<td>{{ user.email }}</td>
-			<td>{{ user.is_staff | yesno:"Oui,Non"}}</td>
+			<td>{{ user.is_superuser | yesno:"Oui,Non"}}</td>
 			<td>
 				<div class="btn-group">
 					<button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 						<i class="fa fa-wrench"></i> Administer
 					</button>
 					<div class="dropdown-menu">
-						{% if not user.is_staff %}<a class="dropdown-item" href="{% url 'adminRights' user.pk %}"><i class="fa fa-cogs"></i> Donner les droits admin</a>{% endif %}
+						{% if not user.is_superuser %}<a class="dropdown-item" href="{% url 'adminRights' user.pk %}"><i class="fa fa-cogs"></i> Donner les droits admin</a>{% endif %}
 						<a class="dropdown-item" href="{% url 'resetPassword' user.pk %}"><i class="fa fa-lock"></i> Réinitialiser le mot de passe</a>
 						<a class="dropdown-item" href="{% url 'editUser' user.pk %}"><i class="fa fa-pencil-alt"></i> Modifier</a>
 						<div class="dropdown-divider"></div>

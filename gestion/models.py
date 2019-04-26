@@ -43,6 +43,9 @@ class TenantManager(models.Manager):
         ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.has_room]
         return Tenant.objects.filter(id__in=ids)
 
+    def has_room(self):
+        ids = [tenant.id for tenant in Tenant.objects.all() if tenant.has_room]
+        return Tenant.objects.filter(id__in=ids)
 
 class Tenant(models.Model):
     class Meta:
@@ -104,7 +107,6 @@ class Tenant(models.Model):
             return True
         except:
             return False
-
 
 class Room(models.Model):
     class Meta:

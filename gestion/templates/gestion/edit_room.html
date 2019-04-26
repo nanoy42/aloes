@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block content%}
+<h3>{{room}} (Lot {{room.lot}}) <span class="badge" style="color:white;background-color:{{room.renovation.color}}">{{room.renovation.name}}</span>
+</h3>
+<form method="post" action="">
+	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+		<button type="submit" class="btn btn-primary" name="submit" value="submit">Sauvegarder</button>
+		<button type="submit" class="btn btn-danger" name="cancel" value="{{request.META.HTTP_REFERER}}">Annuler</button>
+	</div>
+	<br><br>
+	{% csrf_token %}
+	<div class="row">
+		<div class="col">
+			<h3>Informations</h3>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field roomForm.room %}
+				</div>
+				<div class="col">
+					{% bootstrap_field roomForm.lot %}
+				</div>
+			</div>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field roomForm.renovation %}
+				</div>
+				<div class="col">
+					{% bootstrap_field roomForm.rentType %}
+				</div>
+			</div>
+			<h3>Observations</h3>
+			<div class="row">
+				<div class="col">
+					{% bootstrap_field roomForm.observations %}
+				</div>
+			</div>
+		</div>
+		<div class="col">
+			<h3>Locataires</h3>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Locataire</th>
+						<th>Date d'entrée</th>
+						<th>Date de sortie</th>
+						<th>Dossier</th>
+					</tr>
+				</thead>
+				<tbdoy>
+					<tr>
+						<td>
+							{% if nextLeasing %}{{nextLeasing.tenant}} (Prochain locataire){% else %}Pas de prochain locataire{% endif %}
+						</td>
+						<td></td>
+						<td></td>
+						<td>{% if nextLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
+					</tr>
+					<tr>
+						<td>
+							{% if actualLeasing %}{{actualLeasing.tenant}} (Locataire actuel){% else %}Chambre vide{% endif %}
+						</td>
+						<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
+						<td></td>
+						<td>{% if actualLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
+					</tr>
+					{% for leasing in leasings %}
+					<tr>
+						<td>{{leasing.tenant}}</td>
+						<td>{{leasing.date_of_entry}}</td>
+						<td>{{leasing.date_of_departure}}</td>
+						<td><i class="fa fa-folder-open"></i></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	</form>
+{% endblock %}
