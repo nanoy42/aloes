@@ -22,7 +22,6 @@ class Rent(models.Model):
         verbose_name="Loyer"
     type = models.TextField(max_length=255, verbose_name="Genre")
     rent = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Loyer")
-    rent2 = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Loyer2")
     supplements = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Suppléments")
     charges = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Charges")
     application_fee = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Frais de dossier")
@@ -30,6 +29,10 @@ class Rent(models.Model):
 
     def __str__(self):
         return self.type + " (" + str(self.surface) + " m2)"
+
+    @property
+    def total_rent(self):
+        return self.rent + self.supplements + self.charges 
 
 class TenantManager(models.Manager):
     def has_no_next_room(self):

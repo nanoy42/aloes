@@ -6,6 +6,33 @@ from .utils import ODTGenerator
 
 from datetime import datetime
 
+def apl_infos(request, pk):
+    """
+    pk : primary key of a leasing
+    """
+    leasing = get_object_or_404(Leasing, pk=pk)
+    template = ODTGenerator('generate_docs/apl_infos.odt', 'apl_infos_' + leasing.tenant.first_name + leasing.tenant.name + '.odt')
+    return template.render({'leasing': leasing})
+
+def rent_contract(request, pk):
+    """
+    pk : primary key of a leasing
+    """
+    leasing = get_object_or_404(Leasing, pk=pk)
+    room = leasing.room
+    tenant = leasing.tenant
+    if leasing.tenant.gender == "M":
+        gender = "M."
+        born_accorded = "né"
+    else:
+        gender = "Mme."
+        born_accorded = "née"
+    if room.building == "G":
+        template = ODTGenerator('generate_docs/rent_contract_aloes2.odt', 'contrat_location_' + leasing.tenant.first_name + leasing.tenant.name + '_aloes2.odt')
+    else:
+        template = ODTGenerator('generate_docs/rent_contract_aloes1.odt', 'contrat_location_' + leasing.tenant.first_name + leasing.tenant.name + '_aloes1.odt')
+    return template.render({'leasing': leasing, 'tenant': tenant, 'gender': gender, 'born_accorded': born_accorded, 'room': room})
+
 def lease_end_attestation(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.date_of_departure):

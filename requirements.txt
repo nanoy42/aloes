@@ -1,4 +1,4 @@
-Django==2.0.5
+Django==2.0.8
 django-bootstrap4==0.0.6
 django-colorfield==0.1.14
 Pillow==5.2.0

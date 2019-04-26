@@ -18,6 +18,15 @@
 				<a class="dropdown-item" href="#">Quitter la residence</a>
 			</div>
 		</div>
+		<div class="btn-group" role="group">
+			<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Documents
+			</button>
+			<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+				<a class="dropdown-item" href="{% url 'generate_docs:aplInfos' leasing.pk %}">APL infos</a>
+				<a class="dropdown-item" href="{% url 'generate_docs:rentContract' leasing.pk %}">Contrat de location</a>
+			</div>
+		</div>
 	</div>
 	<br><br>
 	{% csrf_token %}
