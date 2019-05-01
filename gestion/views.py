@@ -5,6 +5,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
+from dal import autocomplete
+
 from django_cron import CronJobBase, Schedule
 from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
 from lock_tokens.exceptions import AlreadyLockedError
@@ -717,6 +719,55 @@ def export_csv(request):
     for tenant in tenants:
         writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
     return response
+
+########## autocomplete ########
+class EmptyRoomAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Room.object.none()
+
+        qs = Room.objects.filter(actualTenant=None)
+
+        if self.q :
+            qs = qs.filter(room__istartswith=self.q)
+
+        return qs
+
+class NoNextTenantRoomAutomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Room.object.none()
+
+        qs = Room.objects.filter(nextTenant=None)
+
+        if self.q :
+            qs = qs.filter(room__istartswith=self.q)
+
+        return qs
+
+class TenantWNRAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Tenant.object.none()
+
+        qs = Tenant.objects.has_no_next_room()
+
+        if self.q :
+            qs = qs.filter(Q(name__icontains=self.q) | Q(first_name__icontains=self.q))
+
+        return qs
+
+class TenantWithoutRoomAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Tenant.objects.none()
+
+        qs = Tenant.objects.has_no_room()
+
+        if self.q :
+            qs = qs.filter(Q(name__icontains=self.q) | Q(first_name__icontains=self.q))
+
+        return qs
 
 @admin_required
 def mail_tenants(request):
