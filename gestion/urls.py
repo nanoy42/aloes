@@ -38,4 +38,8 @@ urlpatterns = [
     path('indexMap', views.mapIndex, name="indexMap"),
     path('changeRoomMap/<int:pk>', views.ChangeRoomMap.as_view(), name="changeRoomMap"),
     path('exportCSV', views.export_csv, name="exportCSV"),
+    path('emptyRoomAutocomplete', views.EmptyRoomAutocomplete.as_view(), name="emptyRoomAutocomplete"),
+    path('noNextTenantRoomAutocomplete', views.NoNextTenantRoomAutomplete.as_view(), name="noNextTenantRoomAutocomplete"),
+    path('tenantWNRAutocomplete', views.TenantWNRAutocomplete.as_view(), name="tenantWNRAutocomplete"),
+    path('tenantWithoutRoomAutocomplete', views.TenantWithoutRoomAutocomplete.as_view(), name="tenantWithoutRoomAutocomplete"),
 ]

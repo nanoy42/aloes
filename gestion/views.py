@@ -5,6 +5,8 @@ from django.http import HttpResponse
 from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
+from dal import autocomplete
+from django.db.models import Q
 
 from .models import Renovation, Tenant, Leasing, School, Rent, Room, Map
 from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm, selectTenantWNRForm, selectRoomWNTForm, tenantMoveInDirectForm, roomMoveInDirectForm
@@ -19,7 +21,7 @@ def gestionIndex(request):
         if(search_form.cleaned_data['first_name']):
             res = res.filter(actualTenant__first_name__icontains=search_form.cleaned_data['first_name'])
         if(search_form.cleaned_data['name']):
-            res = res.filter(Q(actualTenant_last_name__icontains=search_form.cleaned_data['name']) | Q(actualTenant__first_name__icontains=search_form.cleaned_data['name']))
+            res = res.filter(Q(actualTenant__last_name__icontains=search_form.cleaned_data['name']) | Q(actualTenant__first_name__icontains=search_form.cleaned_data['name']))
         if(search_form.cleaned_data['room']):
             res = res.filter(room=search_form.cleaned_data['room'])
         if(search_form.cleaned_data['lot']):
@@ -677,3 +679,52 @@ def export_csv(request):
     for tenant in tenants:
         writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
     return response
+
+########## autocomplete ########
+class EmptyRoomAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Room.object.none()
+
+        qs = Room.objects.filter(actualTenant=None)
+
+        if self.q :
+            qs = qs.filter(room__istartswith=self.q)
+
+        return qs
+
+class NoNextTenantRoomAutomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Room.object.none()
+
+        qs = Room.objects.filter(nextTenant=None)
+
+        if self.q :
+            qs = qs.filter(room__istartswith=self.q)
+
+        return qs
+
+class TenantWNRAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Tenant.object.none()
+
+        qs = Tenant.objects.has_no_next_room()
+
+        if self.q :
+            qs = qs.filter(Q(name__icontains=self.q) | Q(first_name__icontains=self.q))
+
+        return qs
+
+class TenantWithoutRoomAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Tenant.objects.none()
+
+        qs = Tenant.objects.has_no_room()
+
+        if self.q :
+            qs = qs.filter(Q(name__icontains=self.q) | Q(first_name__icontains=self.q))
+
+        return qs
