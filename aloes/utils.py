@@ -14,7 +14,7 @@ class ImprovedCreateView(CreateView):
             messages.success(self.request, "Demande annulée")
             return redirect(self.request.POST.get('cancel') or "home")
         else:
-            super().post(self, request, *args, **kwargs)
+            return super().post(self, request, *args, **kwargs)
 
     def form_valid(self, form):
         messages.success(self.request, getattr(self, 'success_message', self.default_success_message))
@@ -33,7 +33,7 @@ class ImprovedUpdateView(UpdateView):
             messages.success(self.request, "Demande annulée")
             return redirect(self.request.POST.get('cancel') or "home")
         else:
-            super().post(self, request, *args, **kwargs)
+            return super().post(self, request, *args, **kwargs)
 
     def form_valid(self, form):
         messages.success(self.request, getattr(self, 'sucess_message', self.default_success_message))

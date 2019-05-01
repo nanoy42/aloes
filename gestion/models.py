@@ -1,5 +1,6 @@
 from django.db import models
 from colorfield.fields import ColorField
+from django.db.utils import OperationalError
 
 class School(models.Model):
     class Meta:
@@ -22,7 +23,7 @@ class Rent(models.Model):
         verbose_name="Loyer"
     type = models.TextField(max_length=255, verbose_name="Genre")
     rent = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Loyer")
-    supplements = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Suppléments")
+    service = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Forfait services")
     charges = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Charges")
     application_fee = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Frais de dossier")
     surface = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Superficie")
@@ -31,21 +32,34 @@ class Rent(models.Model):
         return self.type + " (" + str(self.surface) + " m2)"
 
     @property
+    def supplements(self):
+        return self.service + self.charges
+
+    @property
     def total_rent(self):
-        return self.rent + self.supplements + self.charges 
+        return self.rent + self.supplements 
 
 class TenantManager(models.Manager):
     def has_no_next_room(self):
-        ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.has_next_room]
-        return Tenant.objects.filter(id__in=ids)
+        try:
+            ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.has_next_room]
+            return Tenant.objects.filter(id__in=ids)
+        except OperationalError:
+            return None
 
     def has_no_room(self):
-        ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.has_room]
-        return Tenant.objects.filter(id__in=ids)
+        try:
+            ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.has_room]
+            return Tenant.objects.filter(id__in=ids)
+        except OperationalError:
+            return None
 
     def has_room(self):
-        ids = [tenant.id for tenant in Tenant.objects.all() if tenant.has_room]
-        return Tenant.objects.filter(id__in=ids)
+        try:
+            ids = [tenant.id for tenant in Tenant.objects.all() if tenant.has_room]
+            return Tenant.objects.filter(id__in=ids)
+        except OperationalError:
+            return None
 
 class Tenant(models.Model):
     class Meta:

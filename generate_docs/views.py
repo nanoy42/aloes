@@ -33,6 +33,40 @@ def rent_contract(request, pk):
         template = ODTGenerator('generate_docs/rent_contract_aloes1.odt', 'contrat_location_' + leasing.tenant.first_name + leasing.tenant.name + '_aloes1.odt')
     return template.render({'leasing': leasing, 'tenant': tenant, 'gender': gender, 'born_accorded': born_accorded, 'room': room})
 
+def civil_status(request, pk):
+    """
+    pk : primary key of a leasing
+    """
+    leasing = get_object_or_404(Leasing, pk=pk)
+    tenant = leasing.tenant
+    room = leasing.room
+    total_cheque = room.rentType.rent + room.rentType.total_rent + room.rentType.application_fee
+    template = ODTGenerator('generate_docs/civil_status.odt', 'etat_civil' + leasing.tenant.first_name + leasing.tenant.name + '.odt')
+    return template.render({'leasing': leasing, 'tenant': tenant, 'room': room, 'total_cheque': total_cheque})
+
+def guarantee(request,pk):
+    """
+    pk : a primary key of a leasing
+    """
+    leasing = get_object_or_404(Leasing, pk=pk)
+    room = leasing.room
+    tenant = leasing.tenant
+    if room.building == "G":
+        address = "2 rue Édouard Belin"
+    else:
+        address = "4 place Édouard Branly"
+    template = ODTGenerator('generate_docs/guarantee.odt', 'engagement_caution_' + leasing.tenant.first_name + leasing.tenant.name + '.odt')
+    return template.render({'leasing': leasing, 'room': room, 'address': address, 'total_rent': room.rentType.total_rent, 'total_rent_48': room.rentType.total_rent * 48, 'tenant': tenant})
+
+def insurance_expiration(request, pk):
+    """
+    pk : a primary key of a tenant
+    """
+    tenant = get_object_or_404(Tenant, pk=pk)
+    template = ODTGenerator('generate_docs/insurance_expiration.odt', 'expiration_assurance_' + tenant.first_name + tenant.name + '.odt')
+    return template.render({'tenant': tenant, 'now': datetime.now()})
+
+
 def lease_end_attestation(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.date_of_departure):
@@ -64,4 +98,18 @@ def lease_attestation(request, pk):
         messages.error(request, "Impossible de générer le document : le locataire n'a pas de chambre.")
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': pk}))
 
-
+def lease_attestation_english(request, pk):
+    tenant = get_object_or_404(Tenant, pk=pk)
+    if(tenant.has_room):
+        leasing = get_object_or_404(Leasing, tenant=tenant, room=tenant.room)
+        if(tenant.gender == "F"):
+            gender = "Mme."
+            born_accorded = "née"
+        else:
+            gender = "M."
+            born_accorded = "né"
+        template = ODTGenerator('generate_docs/lease_attestation_english.odt', 'attesationResidence' + tenant.first_name + tenant.name + '.odt')
+        return template.render({'now': datetime.now(), 'tenant': tenant, 'user': request.user, 'born_accorded': born_accorded, 'gender': gender, 'leasing': leasing})
+    else:
+        messages.error(request, "Impossible de générer le document : le locataire n'a pas de chambre.")
+        return redirect(reverse('gestion:tenantProfile', kwargs={'pk': pk}))
