@@ -2,116 +2,119 @@
 {% load bootstrap4 %}
 {% block content%}
 <h3>{{leasing}}</h3>
-<form method="post" action="">
-	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-		<button type="submit" class="btn btn-primary">Sauvegarder</button>
+<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+	<a href="{% url 'gestion:editLeasing' leasing.pk %}" type="submit" class="btn btn-primary">Modifier</a>
 
-		<div class="btn-group" role="group">
-			<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				Actions
-			</button>
-			<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-				<a class="dropdown-item" href="#">Enménagement</a>
-				<a class="dropdown-item" href="#">Déménagement</a>
-				<a class="dropdown-item" href="#">Enménagement-déménagement</a>
-				<div class="dropdown-divider"></div>
-				<a class="dropdown-item" href="#">Quitter la residence</a>
-			</div>
+	<div class="btn-group" role="group">
+		<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			Actions
+		</button>
+		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+			<a class="dropdown-item" href="#">Enménagement</a>
+			<a class="dropdown-item" href="#">Déménagement</a>
+			<a class="dropdown-item" href="#">Enménagement-déménagement</a>
+			<div class="dropdown-divider"></div>
+			<a class="dropdown-item" href="#">Quitter la residence</a>
 		</div>
 	</div>
-	<br><br>
-	{% csrf_token %}
-	<div class="row">
-		<div class="col">
-			Locataire : <a href="{% url 'gestion:tenantProfile' leasing.tenant.pk %}">{{leasing.tenant}}</a>
-		</div>
-		<div class="col">
-			Chambre : <a href="{% url 'gestion:roomProfile' leasing.room.pk %}">{{leasing.room}}</a>
+</div>
+<br><br>
+{% csrf_token %}
+<div class="row">
+	<div class="col">
+		Locataire : <a href="{% url 'gestion:tenantProfile' leasing.tenant.pk %}">{{leasing.tenant}}</a>
+	</div>
+	<div class="col">
+		Chambre : <a href="{% url 'gestion:roomProfile' leasing.room.pk %}">{{leasing.room}}</a>
+	</div>
+</div>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><label for="id_date_of_entry">Date d'entrée</label><input type="text" name="date_of_entry" value="{{leasing.date_of_entry}}" class="form-control" placeholder="Date d'entrée" title="" id="id_date_of_entry" disabled/></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><label for="id_date_of_departure">Date de sortie</label><input type="text" name="date_of_departure" value="{{leasing.date_of_departure}}" class="form-control" placeholder="Date de sortie" title="" id="id_date_of_departure" disabled/></div>
+	</div>
+</div>
+<h4>Dossier</h4>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_contractSigned"><input type="checkbox" name="contractSigned" class="" id="id_contractSigned" {% if leasing.contractSigned %}checked{% endif %} disabled/> Contrat signé</label></div></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><label for="id_contractDate">Date du contrat</label><input type="text" name="contractDate" value="{{leasing.contractDate}}" class="form-control" placeholder="Date du contrat" title="" id="id_contractDate" disabled/></div>
+	</div>
+</div>
+<h5>Garant</h5>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_cautionRib"><input type="checkbox" name="cautionRib" class="" id="id_cautionRib" {% if leasing.cautionRib %}checked{% endif %} disabled/> RIB caution</label></div></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_idgarant"><input type="checkbox" name="idgarant" class="" id="id_idgarant" {% if leasing.idgarant %}checked{% endif %} disabled/> Pièce d'identité du garant</label></div></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_payinslip"><input type="checkbox" name="payinslip" class="" id="id_payinslip" {% if leasing.payinslip %}checked{% endif %} disabled/> 3 dernier bulletins de salaire du garant</label></div></div>
+	</div>
+</div>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_tax_notice"><input type="checkbox" name="tax_notice" class="" id="id_tax_notice" {% if leasing.tax_notice %}checked{% endif %} disabled/> Avis d'imposition du garant</label></div></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_residence_certificate"><input type="checkbox" name="residence_certificate" class="" id="id_residence_certificate" {% if leasing.residence_certicate %}checked{% endif %} disabled/> Certificat de domicile</label></div></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_stranger"><input type="checkbox" name="stranger" class="" id="id_stranger" {% if leasing.stranger %}checked{% endif %} disabled/> Locataire étranger</label></div></div>
+	</div>
+</div>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><label for="id_bail">Caution</label><input type="number" name="bail" value="{{leasing.bail}}" step="0.01" class="form-control" placeholder="Caution" title="" id="id_bail" disabled/></div>
+	</div>
+</div>
+<h5>Garantie</h5>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_check_guarantee"><input type="checkbox" name="check_guarantee" class="" id="id_check_guarantee" {% if check_guarantee %}checked{% endif %} disabled/> Chèque pour le complément de dépot de garantie</label></div></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><label for="id_guarantee">Garantie</label><input type="number" name="guarantee" value="{{leasing.guarantee}}" step="0.01" class="form-control" placeholder="Garantie" title="" id="id_guarantee" disabled/></div>
+	</div>
+</div>
+<h5>Autres</h5>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><label for="id_insuranceDeadline">Date de fin d'assurance</label><input type="text" name="insuranceDeadline" value="{{leasing.insuranceDeadline}}" class="form-control" placeholder="Date de fin d'assurance" title="" id="id_insuranceDeadline" disabled/></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><label for="id_apl">APL</label><input type="text" name="apl" value="{{leasing.apl}}" class="form-control" placeholder="APL" title="" id="id_apl" disabled/></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><label for="id_caf">CAF</label><input type="text" name="caf" value="{{leasing.caf}}" maxlength="255" class="form-control" placeholder="CAF" title="" id="id_caf" disabled/></div>
+	</div>
+</div>
+<div class="row">
+	<div class="col">
+		<div class="form-group">
+			<label for="id_payment">Paiement</label>
+			<select name="payment" class="form-control" title="" id="id_payment" disabled>
+				<option value="" selected>{{leasing.payment}}</option>
+			</select>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.date_of_entry %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.date_of_departure %}
-		</div>
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_rib"><input type="checkbox" name="rib" class="" id="id_rib" {% if leasing.rib %}checked{% endif %} disabled/> RIB</label></div></div>
 	</div>
-	<h4>Dossier</h4>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.contractSigned %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.contractDate %}
-		</div>
+</div>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_issue"><input type="checkbox" name="issue" class="" id="id_issue" {% if leasing.issue %}checked{% endif %} disabled/> Problème</label></div></div>
 	</div>
-	<h5>Garant</h5>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.cautionRib %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.idgarant %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.payinslip %}
-		</div>
+</div>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><label for="id_missing_documents">Documents manquants</label><textarea name="missing_documents" cols="40" rows="10" class="form-control" placeholder="Documents manquants" title="" id="id_missing_documents" disabled>{{leasing.missing_documents}}</textarea></div>
 	</div>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.tax_notice %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.residence_certificate %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.stranger %}
-		</div>
-	</div>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.bail %}
-		</div>
-	</div>
-	<h5>Garantie</h5>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.check_guarantee %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.guarantee %}
-		</div>
-	</div>
-	<h5>Autres</h5>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.insuranceDeadline %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.apl %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.caf %}
-		</div>
-	</div>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.payment %}
-		</div>
-		<div class="col">
-			{% bootstrap_field leasingForm.rib %}
-		</div>
-	</div>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.issue %}
-		</div>
-	</div>
-	<div class="row">
-		<div class="col">
-			{% bootstrap_field leasingForm.missing_documents %}
-		</div>
-	</div>
-</form>
+</div>
 {% endblock %}

@@ -1,17 +1,25 @@
 import csv
 
+from django.core import management
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from django.views.generic import CreateView, UpdateView, DeleteView, ListView
 from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from dal import autocomplete
+
+from django_cron import CronJobBase, Schedule
+from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
+from lock_tokens.exceptions import AlreadyLockedError
 from django.db.models import Q
 
 from .models import Renovation, Tenant, Leasing, School, Rent, Room, Map
 from .form import SearchForm, CreateTenantForm, RoomForm, LeasingForm, TenantForm, CreateRoomForm, LeaveForm, DateForm, selectTenantWNRForm, selectRoomWNTForm, tenantMoveInDirectForm, roomMoveInDirectForm
+from aloes.utils import LockableUpdateView, ImprovedCreateView, ImprovedUpdateView, ImprovedDeleteView
 
+from aloes.acl import admin_required, superuser_required, AdminRequiredMixin, SuperuserRequiredMixin
+from django.contrib.auth.decorators import login_required
 
+@admin_required
 def gestionIndex(request):
     search_form = SearchForm(request.GET or None)
     if search_form.is_valid():
@@ -21,13 +29,11 @@ def gestionIndex(request):
         if(search_form.cleaned_data['first_name']):
             res = res.filter(actualTenant__first_name__icontains=search_form.cleaned_data['first_name'])
         if(search_form.cleaned_data['name']):
-            res = res.filter(Q(actualTenant__last_name__icontains=search_form.cleaned_data['name']) | Q(actualTenant__first_name__icontains=search_form.cleaned_data['name']))
+            res = res.filter(Q(actualTenant__name__icontains=search_form.cleaned_data['name']) | Q(actualTenant__first_name__icontains=search_form.cleaned_data['name']))
         if(search_form.cleaned_data['room']):
-            res = res.filter(room=search_form.cleaned_data['room'])
+            res = res.filter(room__istartswith=search_form.cleaned_data['room'])
         if(search_form.cleaned_data['lot']):
             res = res.filter(lot=search_form.cleaned_data['lot'])
-        if(search_form.cleaned_data['payment'] != "I"):
-            res = res
         if(search_form.cleaned_data['gender'] != "I"):
             res = res.filter(actualTenant__gender=search_form.cleaned_data['gender'])
         if(search_form.cleaned_data['school']):
@@ -38,225 +44,208 @@ def gestionIndex(request):
             res = res.filter(actualTenant__temporary=False)
         if(search_form.cleaned_data['exclude_empty_rooms']):
             res = res.exclude(actualTenant=None)
+        if(search_form.cleaned_data['renovation']):
+            res = res.filter(renovation=search_form.cleaned_data['renovation'])
         if(search_form.cleaned_data['building'] != "I"):
-            res = filter(lambda room: room.building == search_form.cleaned_data['building'], res.all())
-        else:
-            res = res.all()
+            res = res.filter(room__istartswith=search_form.cleaned_data['building'])
+        if(search_form.cleaned_data['sort']):
+            if(search_form.cleaned_data['sort']=="room"):
+                res=res.order_by("room")
+            if(search_form.cleaned_data['sort']=="first_name"):
+                res=res.order_by("actualTenant__first_name")
+            if(search_form.cleaned_data['sort']=="last_name"):
+                res=res.order_by("actualTenant__name")
     else:
         res = Room.objects.all()
     return render(request, "gestion/gestionIndex.html", {"search_form": search_form, "sidebar": True, "active":"default", "rooms": res})
 
 ########## Renovations ##########
 
+@admin_required
 def renovationIndex(request):
     search_form = SearchForm()
     renovations = Renovation.objects.all()
     return render(request, "gestion/renovations_index.html", {"renovations": renovations, "sidebar":True, "search_form":search_form, "active":"renovations"})
 
-class RenovationCreate(CreateView):
+class RenovationCreate(ImprovedCreateView, AdminRequiredMixin):
     model = Renovation
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexRenovation')
-
+    success_message = "Le niveau de rénovation a bien été créé"
+    context = {
+        "form_title": "Création d'un nouveau niveau de rénovation",
+        "form_icon": "star",
+        "form_button": "Créer le niveau de rénovation",
+        "color": True,
+        "active": "renovations",
+    }
     class Meta:
         labels = {
             'name': 'Nom ou niveau',
             'color': 'Couleur :'
         }
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le niveau de rénovation a bien été créé")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'un nouveau niveau de rénovation"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer le niveau de rénovation"
-        context['color'] = True
-        context['active'] = 'renovations'
-        return context
-
-class RenovationEdit(UpdateView):
+class RenovationEdit(LockableUpdateView, AdminRequiredMixin):
     model = Renovation
     fields = "__all__"
     template_name = "form.html"
-    success_url = reverse_lazy('gestion:indexRenovation')
-
-    def form_valid(self, form):
-        messages.success(self.request, "Le niveau de rénovation a bien été modifié")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Modification d'un niveau de rénovation"
-        context['form_icon'] = "pencil-alt"
-        context['form_button'] = "Modifier le niveau de rénovation"
-        context['color'] = True
-        context['active'] = 'renovations'
-        return context
-
-class RenovationDelete(DeleteView):
+    success_url = reverse_lazy("gestion:indexRenovation")
+    success_message = "Le niveau de rénovation a bien été modifié"
+    lock_message = "Impossible de modifier le niveau de rénovation : il est en cours de modification"
+    context = {"form_title": "Modification d'un niveau de rénovation", "form_icon": "pencil-alt", "form_button": "Modifier", "color": True, "active": "renovations"}
+    
+class RenovationDelete(ImprovedDeleteView, AdminRequiredMixin):
     model = Renovation
     context_object_name = "object_name"
     template_name = "delete.html"
     success_url = reverse_lazy('gestion:indexRenovation')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "Le niveau de rénovation a bien été supprimé")
-        return super().delete(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['delete_title'] = "Suppression d'un niveau de rénovation"
-        context['delete_object'] = "le niveau de rénovation"
-        context['delete_link'] = "gestion:indexRenovation"
-        context['active'] = 'renovations'
-        return context
+    success_message = "Le niveau de rénovation a bien été supprimé"
+    context = {
+        "delete_title": "Supression d'un niveau de rénovation",
+        "delete_object": "le niveau de rénovation",
+        "delete_link": "gestion:indexRenovation",
+        "active": "renovations"
+    }
 
 ########## Schools ##########
 
+@admin_required
 def schoolIndex(request):
     search_form = SearchForm()
     schools = School.objects.all()
     return render(request, "gestion/schools_index.html", {"schools": schools, "sidebar":True, "search_form":search_form, "active":"schools"})
 
-class SchoolCreate(CreateView):
+class SchoolCreate(ImprovedCreateView, AdminRequiredMixin):
     model = School
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexSchool')
-
+    success_message = "L'école a bien été créée"
+    context = {
+        "form_title": "Création d'une nouvelle école",
+        "form_icon": "star",
+        "form_button": "Créer l'école",
+        "active": "schools",
+    }
     class Meta:
         labels = {
             'name': 'Nom de l\'école'
         }
 
-    def form_valid(self, form):
-        messages.success(self.request, "L'école a bien été créée")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'une nouvelle école"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer l'école"
-        context['color'] = True
-        context['active'] = 'schools'
-        return context
-
-class SchoolEdit(UpdateView):
+class SchoolEdit(LockableUpdateView, AdminRequiredMixin):
     model = School
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexSchool')
+    success_message = "L'école a bien été modifiée"
+    lock_message = "Impossible de modifier l'école : elle est en cours de modification"
+    context = {"form_title": "Modification d'une école", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "schools"}
 
-    def form_valid(self, form):
-        messages.success(self.request, "L'école a bien été modifiée")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Modification d'une école"
-        context['form_icon'] = "pencil-alt"
-        context['form_button'] = "Modifier l'école"
-        context['color'] = True
-        context['active'] = 'schools'
-        return context
-
-class SchoolDelete(DeleteView):
+class SchoolDelete(ImprovedDeleteView, AdminRequiredMixin):
     model = School
     context_object_name = "object_name"
     template_name = "delete.html"
     success_url = reverse_lazy('gestion:indexSchool')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "L'école a bien été supprimée")
-        return super().delete(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['delete_title'] = "Suppression d'une école"
-        context['delete_object'] = "l'école"
-        context['delete_link'] = "gestion:indexSchool"
-        context['active'] = 'schools'
-        return context
+    success_message = "L'école a bien été supprimée"
+    context = {
+        "delete_title": "Suppression d'une école",
+        "delete_object": "l'école",
+        "delete_link": "gestion:indexSchool",
+        "active": "schools"
+    }
 
 ########## Rents ##########
 
+@admin_required
 def rentIndex(request):
     search_form = SearchForm()
     rents = Rent.objects.all()
     return render(request, "gestion/rents_index.html", {"rents": rents, "sidebar":True, "search_form":search_form, "active":"rents"})
 
-class RentCreate(CreateView):
+class RentCreate(ImprovedCreateView, AdminRequiredMixin):
     model = Rent
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexRent')
-
+    success_message = "Le loyer a bien été créé"
+    context = {
+        "form_title": "Création d'un nouveau loyer",
+        "form_icon": "star",
+        "form_button": "Créer le loyer",
+        "active": "rents"
+    }
     class Meta:
         labels = {
             'type': 'Nom du loyer',
             'rent': 'Loyer',
         }
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le loyer a bien été créé")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'un nouveau loyer"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer le loyer"
-        context['color'] = True
-        context['active'] = 'rents'
-        return context
-
-class RentEdit(UpdateView):
+class RentEdit(LockableUpdateView, AdminRequiredMixin):
     model = Rent
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexRent')
+    success_message = "Le loyer a bien été modifié"
+    lock_message = "Impossible de modifier le loyer : il est en cours de modification"
+    context = {"form_title": "Modification d'un loyer", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "rents"}
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le loyer a bien été modifié")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Modification d'un loyer"
-        context['form_icon'] = "pencil-alt"
-        context['form_button'] = "Modifier le loyer"
-        context['color'] = True
-        context['active'] = 'rents'
-        return context
-
-class RentDelete(DeleteView):
+class RentDelete(ImprovedDeleteView, AdminRequiredMixin):
     model = Rent
     context_object_name = "object_name"
     template_name = "delete.html"
     success_url = reverse_lazy('gestion:indexRent')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "Le loyer a bien été supprimé")
-        return super().delete(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['delete_title'] = "Suppression d'un loyer"
-        context['delete_object'] = "le loyer"
-        context['delete_link'] = "gestion:indexRent"
-        context['active'] = 'rents'
-        return context
+    success_message = "Le loyer a bien été supprimé"
+    context = {
+        "delete_title": "Suppresion d'un loyer",
+        "delete_object": "le loyer",
+        "delete_link": "gestion:indexRent",
+        "active": "rents"
+    }
 
 ########## Rooms ##########
 
+@admin_required
 def roomProfile(request, pk):
     search_form = SearchForm()
     room = get_object_or_404(Room, pk=pk)
+    leasings = Leasing.objects.filter(room=room).order_by("-pk")
+    if(leasings.count() > 0 and leasings[0].tenant == room.nextTenant):
+        nextLeasing = leasings[0]
+        if(leasings.count() > 1):
+            leasings = leasings[1:]
+            if(leasings[0].tenant == room.actualTenant):
+                actualLeasing = leasings[0]
+                if(leasings.count() > 1):
+                    leasings = leasings[1:]
+                else:
+                    leasings = None
+            else:
+                actualLeasing = None
+        else:
+            leasings = None
+            actualLeasing = None
+    elif(leasings.count() > 0 and leasings[0].tenant == room.actualTenant):
+        nextLeasing = None
+        actualLeasing = leasings[0]
+        if(leasings.count() > 1):
+            leasings = leasings[1:]
+        else:
+            leasings = None
+    else:
+        nextLeasing = None
+        actualLeasing = None
+    return render(request, "gestion/roomProfile.html", {"sidebar": True, "room": room, "search_form": search_form, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
+
+@admin_required
+def edit_room(request, pk):
+    search_form = SearchForm()
+    room = get_object_or_404(Room, pk=pk)
+    try:
+        lock_for_session(room, request.session)
+    except AlreadyLockedError:
+        messages.error(request, "Impossible de modifier la chambre : elle est en cours de modification.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
     roomForm = RoomForm(request.POST or None, instance=room)
     leasings = Leasing.objects.filter(room=room).order_by("-pk")
     if(leasings.count() > 0 and leasings[0].tenant == room.nextTenant):
@@ -284,29 +273,34 @@ def roomProfile(request, pk):
     else:
         nextLeasing = None
         actualLeasing = None
-    if(roomForm.is_valid()):
-        roomForm.save()
-        messages.success(request, "Les modifications ont bien été enregistrées")
-    return render(request, "gestion/roomProfile.html", {"sidebar": True, "room": room, "search_form": search_form, "roomForm": roomForm, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        unlock_for_session(room, request.session)
+        return redirect(request.POST.get('cancel') or "home")
+    else:
+        if(roomForm.is_valid()):
+            if not check_for_session(room, request.session):
+                messages.error(request, "Impossible de modifier la chambre : elle est en cours de modification.")
+                return redirect(request.META.get('HTTP_REFERER', '/'))
+            roomForm.save()
+            messages.success(request, "Les modifications ont bien été enregistrées")
+            unlock_for_session(room, request.session)
+            return redirect(reverse('gestion:roomProfile', kwargs={'pk': room.pk}))
+    return render(request, "gestion/edit_room.html", {"sidebar": True, "room": room, "search_form": search_form, "roomForm": roomForm, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
 
-class RoomCreate(CreateView):
+class RoomCreate(ImprovedCreateView, AdminRequiredMixin):
     form_class = CreateRoomForm
     template_name = "form.html"
-
+    success_message = "La chambre a bien été créée"
+    context = {
+        "form_title": "Création d'une nouvelle chambre",
+        "form_icon": "star",
+        "form_button": "Créer la chambre"
+    }
     def get_success_url(self, **kwargs):
         return reverse("gestion:roomProfile", kwargs={'pk': self.object.pk})
 
-    def form_valid(self, form):
-        messages.success(self.request, "La chambre a bien été créée")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'une nouvelle chambre"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer la chambre"
-        return context
-
+@admin_required
 def addNextTenant(request, pk):
     room = get_object_or_404(Room, pk=pk)
     if(room.nextTenant):
@@ -328,6 +322,7 @@ def addNextTenant(request, pk):
     message = "Choisir un locataire pour réserver la chambre"
     return render(request, "form.html", {"form": form, "form_title": "Réservation de la chambre " + str(room), "p": message, "form_button": "Réserver la chambre", "form_icon": "star"})
 
+@admin_required
 def roomMoveInDirect(request, pk):
     room = get_object_or_404(Room, pk=pk)
     if(room.actualTenant):
@@ -349,34 +344,60 @@ def roomMoveInDirect(request, pk):
     message = "Choisir un locataire et la date d'entrée dans la chambre"
     return render(request, "form.html", {"form":form, "form_title": "Location de la chambre " + str(room), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
 
-class ChangeRoomMap(UpdateView):
+class ChangeRoomMap(LockableUpdateView, AdminRequiredMixin):
     model = Room
     fields = ("map",)
     template_name = "form.html"
+    success_message = "Le plan a bien été modifié"
+    lock_message = "Impossible de modifier le plan : il est en cours de modification"
+    context = {"form_title": "Modification d'un plan", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "rooms"}
 
     def get_success_url(self, **kwargs):
         return reverse("gestion:roomProfile", kwargs={'pk': self.object.pk})
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le plan a bien été modifié")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Modification du plan de " + str(self.object)
-        context['form_icon'] = "pencil-alt"
-        context['form_button'] = "Modifier le plan"
-        context['file'] = True
-        context['active'] = 'rooms'
-        return context
-
-
-
 ########## Tenants ##########
 
+@admin_required
 def tenantProfile(request, pk):
     search_form = SearchForm()
     tenant = get_object_or_404(Tenant, pk=pk)
+    leasings = Leasing.objects.filter(tenant=tenant).order_by("-pk")
+    if(leasings.count() > 0 and tenant.has_next_room and leasings[0].room == tenant.nextRoom):
+        nextLeasing = leasings[0]
+        if(leasings.count() > 1):
+            leasings = leasings[1:]
+            if(tenant.has_room and leasings[0] == tenant.room):
+                actualLeasing = leasings[0]
+                if(leasings.count() > 1):
+                    leasings = leasings[1:]
+                else:
+                    leasings = None
+            else:
+                actualLeasing = None
+        else:
+            leasings = None
+            actualLeasing = None
+    elif(leasings.count() > 0 and tenant.has_room and leasings[0].room == tenant.room):
+        nextLeasing = None
+        actualLeasing = leasings[0]
+        if(leasings.count() > 1):
+            leasings = leasings[1:]
+        else:
+            leasings = None
+    else:
+        actualLeasing = None
+        nextLeasing = None
+    return render(request, "gestion/tenantProfile.html", {"sidebar": True, "tenant": tenant, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
+
+@admin_required
+def edit_tenant(request, pk):
+    search_form = SearchForm()
+    tenant = get_object_or_404(Tenant, pk=pk)
+    try:
+        lock_for_session(tenant, request.session)
+    except AlreadyLockedError:
+        messages.error(request, "Impossible de modifier le locataire : il est en cours de modification.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
     tenantForm = TenantForm(request.POST or None, instance=tenant)
     leasings = Leasing.objects.filter(tenant=tenant).order_by("-pk")
     if(leasings.count() > 0 and tenant.has_next_room and leasings[0].room == tenant.nextRoom):
@@ -404,29 +425,34 @@ def tenantProfile(request, pk):
     else:
         actualLeasing = None
         nextLeasing = None
-    if(tenantForm.is_valid()):
-        tenantForm.save()
-        messages.success(request, "Les modifications ont été enregistrées")
-    return render(request, "gestion/tenantProfile.html", {"sidebar": True, "tenant": tenant, "tenantForm": tenantForm, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        unlock_for_session(tenant, request.session)
+        return redirect(request.POST.get('cancel') or "home")
+    else:
+        if(tenantForm.is_valid()):
+            if not check_for_session(tenant, request.session):
+                messages.error(request, "Impossible de modifier le locataire : il est en cours de modification.")
+                return redirect(request.META.get('HTTP_REFERER', '/'))
+            tenantForm.save()
+            messages.success(request, "Les modifications ont été enregistrées")
+            unlock_for_session(tenant, request.session)
+            return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
+    return render(request, "gestion/edit_tenant.html", {"sidebar": True, "tenant": tenant, "tenantForm": tenantForm, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
 
-class TenantCreate(CreateView):
+class TenantCreate(ImprovedCreateView, AdminRequiredMixin):
     form_class = CreateTenantForm
     template_name = "form.html"
-
+    success_message = "Le locataire a bien été créé"
+    context = {
+        "form_title": "Création d'un nouveau locataire",
+        "form_icon": "star",
+        "form_button": "Créer le locataire"
+    }
     def get_success_url(self, **kwargs):
         return reverse("gestion:tenantProfile", kwargs={'pk': self.object.pk})
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le locataire a bien été créé")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'un nouveau locataire"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer le locataire"
-        return context
-
+@admin_required
 def addNextRoom(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.has_next_room):
@@ -448,6 +474,7 @@ def addNextRoom(request, pk):
     message = "Choisir une chambre non réservée"
     return render(request, "form.html", {"form": form, "form_title": "Réservation pour le locataire " + str(tenant), "p": message, "form_button": "Réserver la chambre", "form_icon": "star"})
 
+@admin_required
 def tenantMoveInDirect(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.has_room):
@@ -469,20 +496,48 @@ def tenantMoveInDirect(request, pk):
     message = "Choisir une chambre vide et la date d'entrée dans la chambre"
     return render(request, "form.html", {"form":form, "form_title": "Attribution d'une chambre à " + str(tenant), "p": message, "form_button": "Attribuer", "form_icon": "sign-in-alt"})
 
+@admin_required
+def homeless_tenants(request):
+    """Display tenants without room."""
+    homeless = Tenant.objects.has_no_room()
+    return render(request, "gestion/homeless_tenants.html", {"homeless": homeless})
+
 ########## Leasings ##########
 
+@admin_required
 def leasingProfile(request, pk):
     search_form = SearchForm()
     leasing = get_object_or_404(Leasing, pk=pk)
-    leasingForm = LeasingForm(request.POST or None, instance=leasing)
-    if(leasingForm.is_valid()):
-        leasingForm.save()
-        messages.success(request, "Les modifications ont bien été enregistrées")
-    return render(request, "gestion/leasingProfile.html", {"sidebar": True, "leasing": leasing, "leasingForm": leasingForm, "search_form": search_form})
+    return render(request, "gestion/leasingProfile.html", {"sidebar": True, "leasing": leasing, "search_form": search_form})
 
+@admin_required
+def edit_leasing(request, pk):
+    search_form = SearchForm()
+    leasing = get_object_or_404(Leasing, pk=pk)
+    try:
+        lock_for_session(leasing, request.session)
+    except AlreadyLockedError:
+        messages.error(request, "Impossible de modifier le dossier : il est en cours de modification.")
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+    leasingForm = LeasingForm(request.POST or None, instance=leasing)
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        unlock_for_session(leasing, request.session)
+        return redirect(request.POST.get('cancel') or "home")
+    else:
+        if(leasingForm.is_valid()):
+            if not check_for_session(leasing, request.session):
+                messages.error(request, "Impossible de modifier le dossier : il est en cours de modification.")
+                return redirect(request.META.get('HTTP_REFERER', '/'))
+            leasingForm.save()
+            messages.success(request, "Les modifications ont bien été enregistrées")
+            unlock_for_session(leasing, request.session)
+            return redirect(reverse('gestion:leasingProfile', kwargs={'pk': leasing.pk}))
+    return render(request, "gestion/edit_leasing.html", {"sidebar": True, "leasing": leasing, "leasingForm": leasingForm, "search_form": search_form})
 
 ########## Actions ##########
 
+@admin_required
 def addOneYear(request):
     tenants = Tenant.objects.all()
     for tenant in tenants:
@@ -492,6 +547,7 @@ def addOneYear(request):
     next_url = request.GET.get('next', reverse('home'))
     return redirect(next_url)
 
+@admin_required
 def leave(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.date_of_departure):
@@ -512,6 +568,7 @@ def leave(request, pk):
         return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
     return render(request, "form.html", {"form":leaveForm, "p":message, "form_title":"Faire quitter la résidence", "form_button":"Faire quitter la résidence", "form_icon":"sign-out-alt"})
 
+@admin_required
 def moveOut(request, pk, mode):
     if(mode not in ["tenant", "room"]):
         mode = "tenant"
@@ -542,6 +599,7 @@ def moveOut(request, pk, mode):
             return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
     return render(request, "form.html", {"form": moveOutForm, "p": message, "form_title": form_title, "form_button": form_button, "form_icon": "sign-out-alt"})
 
+@admin_required
 def moveIn(request, pk, mode):
     if(mode not in ["tenant", "room"]):
         mode = "tenant"
@@ -575,6 +633,7 @@ def moveIn(request, pk, mode):
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     return render(request, "form.html", {"form": moveInForm, "p": message, "form_title": "Emménagement d'un locataire", "form_button": "Emménager", "form_icon": "sign-in-alt"})
 
+@admin_required
 def cancelNextRoom(request, pk, mode):
     if(mode not in ["tenant", "room"]):
         mode = "tenant"
@@ -594,73 +653,54 @@ def cancelNextRoom(request, pk, mode):
         messages.success(request, "La prochaine chambre a été annulée")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":room.pk}))
 
-
 ########## Maps ##########
 
-
+@admin_required
 def mapIndex(request):
     search_form = SearchForm()
     maps = Map.objects.all()
     return render(request, "gestion/maps_index.html", {"maps": maps, "sidebar":True, "search_form":search_form, "active":"maps"})
 
-class MapCreate(CreateView):
+class MapCreate(ImprovedCreateView, AdminRequiredMixin):
     model = Map
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexMap')
+    success_message = "Le plan a bien été créé"
+    context = {
+        "form_title": "Création d'un nouveau plan",
+        "form_icon": "star",
+        "form_button": "Créer le plan",
+        "file": True,
+        "active": "maps"
+    }
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le plan a bien été créé")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Création d'un nouveau plan"
-        context['form_icon'] = "star"
-        context['form_button'] = "Créer le plan"
-        context['file'] = True
-        context['active'] = 'maps'
-        return context
-
-class MapEdit(UpdateView):
+class MapEdit(LockableUpdateView, AdminRequiredMixin):
     model = Map
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('gestion:indexMap')
+    success_message = "Le plan a bien été modifié"
+    lock_message = "Impossible de modifier le plan : il est en cours de modification"
+    context = {"form_title": "Modification d'un plan", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "maps"}
 
-    def form_valid(self, form):
-        messages.success(self.request, "Le plan a bien été modifié")
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form_title'] = "Modification d'un plan"
-        context['form_icon'] = "pencil-alt"
-        context['form_button'] = "Modifier le plan"
-        context['file'] = True
-        context['active'] = 'maps'
-        return context
-
-class MapDelete(DeleteView):
+class MapDelete(ImprovedDeleteView, AdminRequiredMixin):
     model = Map
     context_object_name = "object_name"
     template_name = "delete.html"
     success_url = reverse_lazy('gestion:indexMap')
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, "Le plan a bien été supprimé")
-        return super().delete(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['delete_title'] = "Suppression d'un plan"
-        context['delete_object'] = "le plan"
-        context['delete_link'] = "gestion:indexMap"
-        context['active'] = 'maps'
-        return context
+    success_message = "Le plan a bien été supprimé"
+    context = {
+        "delete_title": "Suppression d'un plan",
+        "delete_object": "le plan",
+        "delete_link": "gestion:indexMap",
+        "active" : "maps"
+    }
 
 
 ########## Other ##########
+
+@admin_required
 def export_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="export.csv"'
@@ -728,3 +768,29 @@ class TenantWithoutRoomAutocomplete(autocomplete.Select2QuerySetView):
             qs = qs.filter(Q(name__icontains=self.q) | Q(first_name__icontains=self.q))
 
         return qs
+
+@admin_required
+def mail_tenants(request):
+    tenants_with_room = Tenant.objects.has_room()
+    tenants_emails = [tenant.email for tenant in tenants_with_room if tenant.email is not None]
+    return render(request, "gestion/mail_tenants.html", {"tenants_emails" : tenants_emails})
+
+########## Backup ##########
+
+def copy_backups():
+    return True
+
+def backup(request):
+    management.call_command('dbbackup')
+    copy_backups()
+    messages.success(request, "La base de données a bien été sauvegardée.")
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+class Backup(CronJobBase):
+    RUN_AT_TIMES = ['18:00']
+    schedule = Schedule(run_at_times=RUN_AT_TIMES)
+    code = 'gestion.Backup'
+
+    def do(self):
+        management.call_command('dbbackup')
+        copy_backups()

@@ -3,3 +3,6 @@ django-bootstrap4==0.0.6
 django-colorfield==0.1.14
 Pillow==5.2.0
 pytz==2018.4
+django-cron==0.5.1
+django-dbbackup==3.2.0
+

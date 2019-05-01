@@ -25,15 +25,6 @@ class SearchForm(forms.Form):
         ('G', 'G'),
     )
 
-    PAYMENT_CHOICES = (
-        ('I', 'Tous'),
-        ('direct_debit', 'Prélèvement'),
-        ('bank_transfer', 'Virement'),
-        ('check', 'Chèque'),
-        ('cash', 'Espèces'),
-        ('special', 'Special'),
-    )
-
     GENDER_CHOICES = (
         ('I', 'M/F'),
         ('M', 'M'),
@@ -44,15 +35,14 @@ class SearchForm(forms.Form):
     last_name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'Nom'}), label="", required=False)
     first_name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'Prénom'}), label="", required=False)
     name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'Nom/Prénom'}), label="", required=False)
-    building = forms.ChoiceField(choices=BUILDING_CHOICES, label="Batiment")
+    building = forms.ChoiceField(choices=BUILDING_CHOICES, label="Bâtiment")
     room = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'Chambre'}), label="", required=False)
     lot = forms.IntegerField(widget=forms.NumberInput(attrs={'placeholder': 'Lot'}), label="", required=False)
-    payment = forms.ChoiceField(choices=PAYMENT_CHOICES, label="Paiement")
     renovation = forms.ModelChoiceField(queryset=Renovation.objects.all(), label="Renovation", required=False)
     gender = forms.ChoiceField(choices=GENDER_CHOICES, label="Sexe")
     school = forms.ModelChoiceField(queryset=School.objects.all(), label="Ecole", required=False)
     empty_rooms_only = forms.BooleanField(initial=False, label="Chambres vides seules", required=False)
-    exclude_temporary = forms.BooleanField(initial=False, label="Exclure les locataires passager", required=False)
+    exclude_temporary = forms.BooleanField(initial=False, label="Exclure les locataires passagers", required=False)
     exclude_empty_rooms = forms.BooleanField(initial=False, label="Exclure les chambres vides", required=False)
 
 class CreateTenantForm(forms.ModelForm):
@@ -85,8 +75,28 @@ class RoomForm(forms.ModelForm):
 class LeasingForm(forms.ModelForm):
     class Meta:
         model = Leasing
-        fields = "__all__"
-
+        fields = [
+            "bail",
+            "apl",
+            "payment",
+            "rib",
+            "insuranceDeadline",
+            "contractSigned",
+            "contractDate", 
+            "cautionRib",
+            "idgarant",
+            "payinslip",
+            "tax_notice",
+            "stranger",
+            "caf",
+            "residence_certificate",
+            "check_guarantee",
+            "guarantee",
+            "issue",
+            "missing_documents",
+            "date_of_entry",
+            "date_of_departure"
+        ]
 class LeaveForm(forms.ModelForm):
     class Meta:
         model = Tenant

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block content%}
+<h3>{{leasing}}</h3>
+<form method="post" action="">
+	<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+		<button type="submit" class="btn btn-primary">Sauvegarder</button>
+		<button type="submit" class="btn btn-danger" name="cancel" value="{{request.META.HTTP_REFERER}}">Annuler</button>
+	</div>
+	<br><br>
+	{% csrf_token %}
+	<div class="row">
+		<div class="col">
+			Locataire : {{leasing.tenant}}
+		</div>
+		<div class="col">
+			Chambre : {{leasing.room}}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.date_of_entry %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.date_of_departure %}
+		</div>
+	</div>
+	<h4>Dossier</h4>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.contractSigned %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.contractDate %}
+		</div>
+	</div>
+	<h5>Garant</h5>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.cautionRib %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.idgarant %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.payinslip %}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.tax_notice %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.residence_certificate %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.stranger %}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.bail %}
+		</div>
+	</div>
+	<h5>Garantie</h5>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.check_guarantee %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.guarantee %}
+		</div>
+	</div>
+	<h5>Autres</h5>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.insuranceDeadline %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.apl %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.caf %}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.payment %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.rib %}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.issue %}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.missing_documents %}
+		</div>
+	</div>
+</form>
+{% endblock %}
