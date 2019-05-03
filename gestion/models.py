@@ -42,21 +42,21 @@ class Rent(models.Model):
 class TenantManager(models.Manager):
     def has_no_next_room(self):
         try:
-            ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.has_next_room]
+            ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.next_room]
             return Tenant.objects.filter(id__in=ids)
         except OperationalError:
             return None
 
     def has_no_room(self):
         try:
-            ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.has_room]
+            ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.room]
             return Tenant.objects.filter(id__in=ids)
         except OperationalError:
             return None
 
     def has_room(self):
         try:
-            ids = [tenant.id for tenant in Tenant.objects.all() if tenant.has_room]
+            ids = [tenant.id for tenant in Tenant.objects.all() if tenant.room]
             return Tenant.objects.filter(id__in=ids)
         except OperationalError:
             return None
@@ -96,6 +96,8 @@ class Tenant(models.Model):
     country = models.CharField(max_length=255, verbose_name="Pays", blank=True)
     email = models.EmailField(verbose_name="Email", blank=True)
     phone = models.CharField(max_length=10, verbose_name="Téléphone fixe", blank=True)
+    current_leasing = models.ForeignKey('Leasing', on_delete=models.PROTECT, verbose_name="Dossier actuel", blank=True, null=True, related_name="current_tenants")
+    next_leasing = models.ForeignKey('Leasing', on_delete=models.PROTECT, verbose_name="Dossier suivant", blank=True, null=True, related_name="next_tenants")
 
     objects = TenantManager()
 
@@ -107,20 +109,28 @@ class Tenant(models.Model):
         return pre + " " + self.first_name + " " + self.name
 
     @property
-    def has_room(self):
-        try:
-            room = self.room
-            return True
-        except:
-            return False
+    def room(self):
+        if self.current_leasing:
+            return self.current_leasing.room
+        else:
+            return None
 
     @property
-    def has_next_room(self):
-        try:
-            nextRoom = self.nextRoom
-            return True
-        except:
-            return False
+    def next_room(self):
+        if self.next_leasing:
+            return self.next_leasing.room
+        else:
+            return None
+
+    @property
+    def previous_leasings(self):
+        leasings = Leasing.objects.filter(tenant=self).exclude(pk=self.current_leasing.pk).exclude(pk=next_leasing.pk).order_by['-pk']
+        return leasings
+
+    @property
+    def previous_rooms(self):
+        pks = [leasing.room.pk for leasing in self.previous_leasings]
+        return Room.objects.filter(pk__in=pks)
 
 class Room(models.Model):
     class Meta:
@@ -130,16 +140,41 @@ class Room(models.Model):
     room = models.CharField(max_length=6, verbose_name="Chambre")
     rentType = models.ForeignKey('Rent', on_delete=models.PROTECT, verbose_name="Loyer")
     renovation = models.ForeignKey('Renovation', on_delete=models.PROTECT, verbose_name="Niveau de rénovation", blank=True, null=True)
-    actualTenant = models.OneToOneField('Tenant', on_delete=models.PROTECT, related_name="room", verbose_name="Locataire actuel", blank=True, null=True)
-    nextTenant = models.OneToOneField('Tenant', on_delete=models.PROTECT, null=True, blank=True, related_name="nextRoom", verbose_name="Prochain locataire")
     observations = models.TextField(verbose_name="Observations", blank=True)
     map = models.ImageField(verbose_name="Plan", blank=True, null=True)
+    current_leasing = models.ForeignKey('Leasing', on_delete=models.PROTECT, verbose_name="Dossier actuel", blank=True, null=True, related_name="current_rooms")
+    next_leasing = models.ForeignKey('Leasing', on_delete=models.PROTECT, verbose_name="Dossier suivant", blank=True, null=True, related_name="next_rooms")
 
     def __str__(self):
         return self.room
 
     def building(self):
         return self.room[0]
+
+    @property
+    def current_tenant(self):
+        if self.current_leasing:
+            return self.current_leasing.tenant
+        else:
+            return None
+
+    @property
+    def next_tenant(self):
+        if self.next_leasing:
+            return self.next_leasing.tenant
+        else:
+            return Leasing
+
+    @property
+    def previous_leasings(self):
+        leasings = Leasing.objects.filter(room=self).exclude(pk=self.current_leasing.pk).exclude(pk=next_leasing.pk).order_by['-pk']
+        return leasings
+
+    @property
+    def previous_tenants(self):
+        pks = [leasing.tenant.pk for leasing in self.previous_leasings]
+        return Tenant.objects.filter(pk__in=pks)
+
 
 class Leasing(models.Model):
     class Meta:
@@ -153,6 +188,7 @@ class Leasing(models.Model):
         ('special', 'Special'),
     )
     tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, verbose_name="Locataire")
+    room = models.ForeignKey('Room', on_delete=models.PROTECT, verbose_name="Chambre")
     bail = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Caution", blank=True, null=True)
     apl = models.DateField(verbose_name="APL", blank=True, null=True)
     payment = models.CharField(max_length=255, verbose_name="Paiement", choices=PAYMENT_CHOICES, blank=True)
@@ -171,9 +207,9 @@ class Leasing(models.Model):
     guarantee = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Garantie", blank=True, null=True)
     issue = models.BooleanField(default=False, verbose_name="Problème")
     missing_documents = models.TextField(verbose_name="Documents manquants", blank=True)
-    room = models.ForeignKey('Room', on_delete=models.PROTECT, verbose_name="Chambre")
     date_of_entry = models.DateField(verbose_name="Date d'entrée", blank=True, null=True)
     date_of_departure = models.DateField(verbose_name="Date de sortie", blank=True, null=True)
+    
 
     def __str__(self):
         if(self.date_of_entry):

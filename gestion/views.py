@@ -23,25 +23,25 @@ def gestionIndex(request):
     if search_form.is_valid():
         res = Room.objects
         if(search_form.cleaned_data['last_name']):
-            res = res.filter(actualTenant__name__icontains=search_form.cleaned_data['last_name'])
+            res = res.filter(current_leasing__tenant__name__icontains=search_form.cleaned_data['last_name'])
         if(search_form.cleaned_data['first_name']):
-            res = res.filter(actualTenant__first_name__icontains=search_form.cleaned_data['first_name'])
+            res = res.filter(current_leasing__tenant__first_name__icontains=search_form.cleaned_data['first_name'])
         if(search_form.cleaned_data['name']):
-            res = res.filter(Q(actualTenant__name__icontains=search_form.cleaned_data['name']) | Q(actualTenant__first_name__icontains=search_form.cleaned_data['name']))
+            res = res.filter(Q(current_leasing__tenant__name__icontains=search_form.cleaned_data['name']) | Q(curent_leasing__tenant__first_name__icontains=search_form.cleaned_data['name']))
         if(search_form.cleaned_data['room']):
             res = res.filter(room__istartswith=search_form.cleaned_data['room'])
         if(search_form.cleaned_data['lot']):
             res = res.filter(lot=search_form.cleaned_data['lot'])
         if(search_form.cleaned_data['gender'] != "I"):
-            res = res.filter(actualTenant__gender=search_form.cleaned_data['gender'])
+            res = res.filter(current_leasing__tenant__gender=search_form.cleaned_data['gender'])
         if(search_form.cleaned_data['school']):
-            res = res.filter(actualTenant__school=search_form.cleaned_data['school'])
+            res = res.filter(current_leasing__tenant__school=search_form.cleaned_data['school'])
         if(search_form.cleaned_data['empty_rooms_only']):
-            res = res.filter(actualTenant=None)
+            res = res.filter(current_leasing__tenant=None)
         if(search_form.cleaned_data['exclude_temporary']):
-            res = res.filter(actualTenant__temporary=False)
+            res = res.filter(current_leasing__tenant__temporary=False)
         if(search_form.cleaned_data['exclude_empty_rooms']):
-            res = res.exclude(actualTenant=None)
+            res = res.exclude(current_leasing__tenant=None)
         if(search_form.cleaned_data['renovation']):
             res = res.filter(renovation=search_form.cleaned_data['renovation'])
         if(search_form.cleaned_data['building'] != "I"):
@@ -207,33 +207,7 @@ class RentDelete(ImprovedDeleteView, AdminRequiredMixin):
 def roomProfile(request, pk):
     search_form = SearchForm()
     room = get_object_or_404(Room, pk=pk)
-    leasings = Leasing.objects.filter(room=room).order_by("-pk")
-    if(leasings.count() > 0 and leasings[0].tenant == room.nextTenant):
-        nextLeasing = leasings[0]
-        if(leasings.count() > 1):
-            leasings = leasings[1:]
-            if(leasings[0].tenant == room.actualTenant):
-                actualLeasing = leasings[0]
-                if(leasings.count() > 1):
-                    leasings = leasings[1:]
-                else:
-                    leasings = None
-            else:
-                actualLeasing = None
-        else:
-            leasings = None
-            actualLeasing = None
-    elif(leasings.count() > 0 and leasings[0].tenant == room.actualTenant):
-        nextLeasing = None
-        actualLeasing = leasings[0]
-        if(leasings.count() > 1):
-            leasings = leasings[1:]
-        else:
-            leasings = None
-    else:
-        nextLeasing = None
-        actualLeasing = None
-    return render(request, "gestion/roomProfile.html", {"sidebar": True, "room": room, "search_form": search_form, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
+    return render(request, "gestion/room_profile.html", {"sidebar": True, "room": room, "search_form": search_form})
 
 @admin_required
 def edit_room(request, pk):
@@ -245,32 +219,6 @@ def edit_room(request, pk):
         messages.error(request, "Impossible de modifier la chambre : elle est en cours de modification.")
         return redirect(request.META.get('HTTP_REFERER', '/'))
     roomForm = RoomForm(request.POST or None, instance=room)
-    leasings = Leasing.objects.filter(room=room).order_by("-pk")
-    if(leasings.count() > 0 and leasings[0].tenant == room.nextTenant):
-        nextLeasing = leasings[0]
-        if(leasings.count() > 1):
-            leasings = leasings[1:]
-            if(leasings[0].tenant == room.actualTenant):
-                actualLeasing = leasings[0]
-                if(leasings.count() > 1):
-                    leasings = leasings[1:]
-                else:
-                    leasings = None
-            else:
-                actualLeasing = None
-        else:
-            leasings = None
-            actualLeasing = None
-    elif(leasings.count() > 0 and leasings[0].tenant == room.actualTenant):
-        nextLeasing = None
-        actualLeasing = leasings[0]
-        if(leasings.count() > 1):
-            leasings = leasings[1:]
-        else:
-            leasings = None
-    else:
-        nextLeasing = None
-        actualLeasing = None
     if 'cancel' in request.POST:
         messages.success(request, "Demande annulée")
         unlock_for_session(room, request.session)
@@ -284,7 +232,7 @@ def edit_room(request, pk):
             messages.success(request, "Les modifications ont bien été enregistrées")
             unlock_for_session(room, request.session)
             return redirect(reverse('gestion:roomProfile', kwargs={'pk': room.pk}))
-    return render(request, "gestion/edit_room.html", {"sidebar": True, "room": room, "search_form": search_form, "roomForm": roomForm, "leasings": leasings, "nextLeasing": nextLeasing, "actualLeasing": actualLeasing})
+    return render(request, "gestion/edit_room.html", {"sidebar": True, "room": room, "search_form": search_form, "roomForm": roomForm})
 
 class RoomCreate(ImprovedCreateView, AdminRequiredMixin):
     form_class = CreateRoomForm
@@ -311,10 +259,12 @@ def addNextTenant(request, pk):
             if(tenant.has_next_room):
                 messages.error(request, "Ce locataire a déjà reservé une chambre")
             else:
-                room.nextTenant = tenant
-                room.save()
                 leasing = Leasing(room=room, tenant=tenant)
                 leasing.save()
+                room.next_leasing = leasing
+                room.save()
+                tenant.next_leasing = leasing
+                tenant.save()
                 messages.success(request, "La chambre a bien été réservée")
             return redirect(reverse('gestion:roomProfile', kwargs={'pk':pk}))
     message = "Choisir un locataire pour réserver la chambre"
@@ -323,7 +273,7 @@ def addNextTenant(request, pk):
 @admin_required
 def roomMoveInDirect(request, pk):
     room = get_object_or_404(Room, pk=pk)
-    if(room.actualTenant):
+    if(room.current_tenant):
         messages.error(request, "La chambre n'est pas vide")
         return redirect(reverse('gestion:roomProfile', kwargs={"pk":pk}))
     else:
@@ -333,10 +283,12 @@ def roomMoveInDirect(request, pk):
             if(tenant.has_room):
                 messages.error(request, "Ce locataire possède déjà une chambre")
             else:
-                room.actualTenant = tenant
-                room.save()
                 leasing = Leasing(room=room, tenant=tenant, date_of_entry=form.cleaned_data['date'])
                 leasing.save()
+                room.current_leasing = leasing
+                room.save()
+                tenant.current_leasing = leasing
+                tenant.save()
                 messages.success(request, "Le locataire a bien été emménagé")
             return redirect(reverse('gestion:roomProfile', kwargs={"pk":pk}))
     message = "Choisir un locataire et la date d'entrée dans la chambre"
@@ -359,33 +311,7 @@ class ChangeRoomMap(LockableUpdateView, AdminRequiredMixin):
 def tenantProfile(request, pk):
     search_form = SearchForm()
     tenant = get_object_or_404(Tenant, pk=pk)
-    leasings = Leasing.objects.filter(tenant=tenant).order_by("-pk")
-    if(leasings.count() > 0 and tenant.has_next_room and leasings[0].room == tenant.nextRoom):
-        nextLeasing = leasings[0]
-        if(leasings.count() > 1):
-            leasings = leasings[1:]
-            if(tenant.has_room and leasings[0] == tenant.room):
-                actualLeasing = leasings[0]
-                if(leasings.count() > 1):
-                    leasings = leasings[1:]
-                else:
-                    leasings = None
-            else:
-                actualLeasing = None
-        else:
-            leasings = None
-            actualLeasing = None
-    elif(leasings.count() > 0 and tenant.has_room and leasings[0].room == tenant.room):
-        nextLeasing = None
-        actualLeasing = leasings[0]
-        if(leasings.count() > 1):
-            leasings = leasings[1:]
-        else:
-            leasings = None
-    else:
-        actualLeasing = None
-        nextLeasing = None
-    return render(request, "gestion/tenantProfile.html", {"sidebar": True, "tenant": tenant, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
+    return render(request, "gestion/tenant_profile.html", {"sidebar": True, "tenant": tenant, "search_form": search_form})
 
 @admin_required
 def edit_tenant(request, pk):
@@ -397,32 +323,6 @@ def edit_tenant(request, pk):
         messages.error(request, "Impossible de modifier le locataire : il est en cours de modification.")
         return redirect(request.META.get('HTTP_REFERER', '/'))
     tenantForm = TenantForm(request.POST or None, instance=tenant)
-    leasings = Leasing.objects.filter(tenant=tenant).order_by("-pk")
-    if(leasings.count() > 0 and tenant.has_next_room and leasings[0].room == tenant.nextRoom):
-        nextLeasing = leasings[0]
-        if(leasings.count() > 1):
-            leasings = leasings[1:]
-            if(tenant.has_room and leasings[0] == tenant.room):
-                actualLeasing = leasings[0]
-                if(leasings.count() > 1):
-                    leasings = leasings[1:]
-                else:
-                    leasings = None
-            else:
-                actualLeasing = None
-        else:
-            leasings = None
-            actualLeasing = None
-    elif(leasings.count() > 0 and tenant.has_room and leasings[0].room == tenant.room):
-        nextLeasing = None
-        actualLeasing = leasings[0]
-        if(leasings.count() > 1):
-            leasings = leasings[1:]
-        else:
-            leasings = None
-    else:
-        actualLeasing = None
-        nextLeasing = None
     if 'cancel' in request.POST:
         messages.success(request, "Demande annulée")
         unlock_for_session(tenant, request.session)
@@ -436,7 +336,7 @@ def edit_tenant(request, pk):
             messages.success(request, "Les modifications ont été enregistrées")
             unlock_for_session(tenant, request.session)
             return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
-    return render(request, "gestion/edit_tenant.html", {"sidebar": True, "tenant": tenant, "tenantForm": tenantForm, "search_form": search_form, "leasings": leasings, "actualLeasing": actualLeasing, "nextLeasing": nextLeasing})
+    return render(request, "gestion/edit_tenant.html", {"sidebar": True, "tenant": tenant, "tenantForm": tenantForm, "search_form": search_form})
 
 class TenantCreate(ImprovedCreateView, AdminRequiredMixin):
     form_class = CreateTenantForm
@@ -453,7 +353,7 @@ class TenantCreate(ImprovedCreateView, AdminRequiredMixin):
 @admin_required
 def addNextRoom(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
-    if(tenant.has_next_room):
+    if(tenant.next_room):
         messages.error(request, "Ce locataire a déjà réservé une chambre")
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk':pk}))
     else:
@@ -463,10 +363,12 @@ def addNextRoom(request, pk):
             if(room.nextTenant):
                 messages.error(request, "Cette chambre est déjà réservée")
             else:
-                room.nextTenant = tenant
-                room.save()
                 leasing = Leasing(room=room, tenant=tenant)
                 leasing.save()
+                room.next_leasing = leasing
+                room.save()
+                tenant.next_leasing = leasing
+                tenant.save()
                 messages.success(request, "Le locataire a bien réservé la chambre")
             return redirect(reverse('gestion:tenantProfile', kwargs={'pk':pk}))
     message = "Choisir une chambre non réservée"
@@ -475,7 +377,7 @@ def addNextRoom(request, pk):
 @admin_required
 def tenantMoveInDirect(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
-    if(tenant.has_room):
+    if(tenant.room):
         messages.error(request, "Ce locataire possède déjà une chambre")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":pk}))
     else:
@@ -485,10 +387,12 @@ def tenantMoveInDirect(request, pk):
             if(room.actualTenant):
                 messages.error(request, "Cette chambre n'est pas vide")
             else:
-                room.actualTenant = tenant
-                room.save()
                 leasing = Leasing(room=room, tenant=tenant, date_of_entry=form.cleaned_data['date'])
                 leasing.save()
+                room.current_leasing = leasing
+                room.save()
+                tenant.current_leasing = leasing
+                tenant.save()
                 messages.success(request, "Le locataire a bien été emménagé")
             return redirect(reverse('gestion:tenantProfile', kwargs={"pk":pk}))
     message = "Choisir une chambre vide et la date d'entrée dans la chambre"
@@ -556,12 +460,14 @@ def leave(request, pk):
     if(leaveForm.is_valid()):
         leaveForm.save()
         if(tenant.has_room):
-            leasing = get_object_or_404(Leasing, tenant = tenant, room = tenant.room)
+            leasing = tenant.current_leasing
             leasing.date_of_departure = leaveForm.cleaned_data['date_of_departure']
             leasing.save()
             room = tenant.room
-            room.actualTenant = None
+            room.current_leasing = None
             room.save()
+            tenant.current_leasing = None
+            tenant.save()
         messages.success(request, "Le locataire a bien quitté la résidence")
         return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
     return render(request, "form.html", {"form":leaveForm, "p":message, "form_title":"Faire quitter la résidence", "form_button":"Faire quitter la résidence", "form_icon":"sign-out-alt"})
@@ -571,7 +477,7 @@ def moveOut(request, pk, mode):
     if(mode not in ["tenant", "room"]):
         mode = "tenant"
     tenant = get_object_or_404(Tenant, pk=pk)
-    if(not tenant.has_room):
+    if(not tenant.room):
         messages.error(request, "Le locataire n'est dans aucune chambre actuellement")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
     moveOutForm = DateForm(request.POST or None)
@@ -583,12 +489,13 @@ def moveOut(request, pk, mode):
         form_title = "Déménager " + str(tenant)
         form_button = "Déménager"
     if(moveOutForm.is_valid()):
-        leasing = get_object_or_404(Leasing, tenant = tenant, room = tenant.room)
+        leasing = tenant.current_leasing
         leasing.date_of_departure = moveOutForm.cleaned_data['date']
         leasing.save()
         room = tenant.room
-        room.actualTenant = None
+        room.current_leasing = None
         room.save()
+        tenant.current_leasing = None
         if(mode == "room"):
             messages.success(request, "La chambre a bien été vidé")
             return redirect(reverse("gestion:roomProfile", kwargs={"pk":room.pk}))
@@ -602,17 +509,17 @@ def moveIn(request, pk, mode):
     if(mode not in ["tenant", "room"]):
         mode = "tenant"
     tenant = get_object_or_404(Tenant, pk=pk)
-    if(not tenant.has_next_room):
+    if(not tenant.next_room):
         messages.error(request, "Ce locataire n'a pas de prochaine chambre")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk": tenant.pk}))
-    elif(tenant.nextRoom.actualTenant is not None):
+    elif(tenant.next_leasing.room.current_leasing is not None):
         if(mode == "room"):
             messages.error(request, "La chambre n'est pas vide")
             return redirect(reverse('gestion:roomProfile', kwargs={"pk":tenant.next_room.pk}))
         else:
             messages.error(request, "La prochaine chambre n'est pas vide")
             return redirect(reverse('gestion:tenantProfile', kwargs={"pk": tenant.pk}))
-    elif(tenant.has_room):
+    elif(tenant.room):
         if(mode == "room"):
             messages.error(request, "Le prochain locataire possède actuellement une chambre. Déménager le avant de l'emménager")
         else:
@@ -621,13 +528,15 @@ def moveIn(request, pk, mode):
     moveInForm = DateForm(request.POST or None)
     message = "Veuillez indiquer la date d'entrée officielle dans la chambre " + str(tenant.nextRoom) + " pour " + str(tenant)
     if(moveInForm.is_valid()):
-        room = tenant.nextRoom
-        room.actualTenant = tenant
-        room.nextTenant = None
-        room.save()
-        leasing = Leasing.objects.get(room=room, tenant=tenant)
+        leasing = tenant.next_leasing
         leasing.date_of_entry=moveInForm.cleaned_data['date']
         leasing.save()
+        tenant.current_leasing = leasing
+        tenant.next_leasing = None
+        tenant.save()
+        room.current_leasing = leasing
+        room.next_leasing = None
+        room.save()
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     return render(request, "form.html", {"form": moveInForm, "p": message, "form_title": "Emménagement d'un locataire", "form_button": "Emménager", "form_icon": "sign-in-alt"})
 
@@ -636,13 +545,15 @@ def cancelNextRoom(request, pk, mode):
     if(mode not in ["tenant", "room"]):
         mode = "tenant"
     tenant = get_object_or_404(Tenant, pk=pk)
-    if(not tenant.has_next_room):
+    if(not tenant.next_room):
         messages.error(request, "Ce locataire n'a pas de prochaine chambre")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
-    room = tenant.nextRoom
-    room.nextTenant = None
+    leasing = tenant.next_leasing
+    room = tenant.next_leasing.room
+    room.next_leasing = None
     room.save()
-    leasing = Leasing.objects.get(room=room, tenant=tenant)
+    tenant.next_leasing = None
+    tenant.save()
     leasing.delete()
     if(mode == "room"):
         messages.success(request, "Le prochain locataire a bien été annulé")

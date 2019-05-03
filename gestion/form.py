@@ -64,7 +64,7 @@ class TenantForm(forms.ModelForm):
 class CreateRoomForm(forms.ModelForm):
     class Meta:
         model = Room
-        exclude = ('actualTenant', 'nextTenant')
+        exclude = ('current_leasing', 'next_leasing')
 
 class RoomForm(forms.ModelForm):
     class Meta:
@@ -96,6 +96,7 @@ class LeasingForm(forms.ModelForm):
             "date_of_entry",
             "date_of_departure"
         ]
+
 class LeaveForm(forms.ModelForm):
     class Meta:
         model = Tenant
@@ -111,10 +112,10 @@ class selectTenantWNRForm(forms.Form):
     tenant = forms.ModelChoiceField(queryset=Tenant.objects.has_no_next_room(), required=True, label="Locataire")
 
 class selectRoomWNTForm(forms.Form):
-    room = forms.ModelChoiceField(queryset=Room.objects.filter(nextTenant=None), required=True, label="Chambre")
+    room = forms.ModelChoiceField(queryset=Room.objects.filter(next_leasing=None), required=True, label="Chambre")
 
 class tenantMoveInDirectForm(forms.Form):
-    room = forms.ModelChoiceField(queryset=Room.objects.filter(actualTenant=None), required=True, label="Chambre")
+    room = forms.ModelChoiceField(queryset=Room.objects.filter(current_leasing=None), required=True, label="Chambre")
     date = forms.DateField(widget=DatePicker(), required=True)
 
 class roomMoveInDirectForm(forms.Form):

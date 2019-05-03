@@ -12,4 +12,5 @@ urlpatterns = [
     path('leaseEndAttestation/<int:pk>', views.lease_end_attestation, name="leaseEndAttestation"),
     path('leaseAttestation/<int:pk>', views.lease_attestation, name="leaseAttestation"),
     path('leaseAttestationEnglish/<int:pk>', views.lease_attestation_english, name="leaseAttestationEnglish"),
+    path('tenantRecord/<int:pk>', views.tenant_record, name="tenantRecord"),
 ]

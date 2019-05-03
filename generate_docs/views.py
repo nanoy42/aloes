@@ -60,9 +60,9 @@ def guarantee(request,pk):
 
 def insurance_expiration(request, pk):
     """
-    pk : a primary key of a tenant
+    pk : a primary key of a leasing
     """
-    tenant = get_object_or_404(Tenant, pk=pk)
+    tenant = get_object_or_404(Leasing, pk=pk).tenant
     template = ODTGenerator('generate_docs/insurance_expiration.odt', 'expiration_assurance_' + tenant.first_name + tenant.name + '.odt')
     return template.render({'tenant': tenant, 'now': datetime.now()})
 
@@ -113,3 +113,10 @@ def lease_attestation_english(request, pk):
     else:
         messages.error(request, "Impossible de générer le document : le locataire n'a pas de chambre.")
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': pk}))
+
+def tenant_record(request, pk):
+    leasing = get_object_or_404(Leasing, pk=pk)
+    tenant = leasing.tenant
+    room = leasing.room
+    template = ODTGenerator('generate_docs/tenant_record.odt', 'fiche_locataire_' + tenant.first_name + tenant.name + '.odt')
+    return template.render({'leasing': leasing, 'tenant': tenant, 'room': room, 'now': datetime.now()})

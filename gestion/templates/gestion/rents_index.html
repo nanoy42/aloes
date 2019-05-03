@@ -15,7 +15,6 @@
 				<th>Frais de dossier</th>
 				<th>Surface</th>
 				<th>Nombre de chambres</th>
-				<th>Voir les chambres</th>
 				<th>Administration</th>
 			</tr>
 		</thead>
@@ -29,7 +28,6 @@
 				<td>{{rent.application_fee}} €</td>
 				<td>{{rent.surface}} m2</td>
 				<td>{{rent.room_set.all.count}}</td>
-				<td><a href="#"><i class="fa fa-home"></i></a></td>
 				<td><a href="{% url 'gestion:editRent' rent.pk %}" class="btn btn-primary btn-sm"><i class="fa fa-pencil-alt"></i> Modifier</a> <a href="{% url 'gestion:deleteRent' rent.pk %}" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Supprimer</a></td>
 			</tr>
 			{% endfor %}

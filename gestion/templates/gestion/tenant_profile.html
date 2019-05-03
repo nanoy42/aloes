@@ -10,14 +10,14 @@
 			Actions
 		</button>
 		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-			{% if nextLeasing %}
+			{% if tenant.next_leasing %}
 			<a class="dropdown-item" href="{% url 'gestion:moveIn' 'tenant' tenant.pk %}"><i class="fa fa-sign-in-alt"></i> Enménagement</a>
 			<a class="dropdown-item" href="{% url 'gestion:cancelNextRoom' 'tenant' tenant.pk %}"><i class="fa fa-times"></i> Annuler la prochaine chambre</a>
 			{% endif %}
-			{% if actualLeasing %}
+			{% if tenant.current_leasing %}
 			<a class="dropdown-item" href="{% url 'gestion:moveOut' 'tenant' tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Déménagement</a>
 			{% endif %}
-			{% if nextLeasing or actualLeasing and not tenant.date_of_departure %}
+			{% if tenant.next_leasing or tenant.current_leasing and not tenant.date_of_departure %}
 			<div class="dropdown-divider"></div>
 			{% endif %}
 			{% if not tenant.date_of_departure %}
@@ -35,7 +35,6 @@
 			{% endif %}
 			{% if tenant.has_room %}
 			<a class="dropdown-item" href="{% url 'generate_docs:leaseAttestation' tenant.pk %}">Attestation de résidence</a>
-			<a class="dropdown-item" href="{% url 'generate_docs:insuranceExpiration' tenant.pk %}">Expiration assurance</a>
 			{% endif %}
 		</div>
 	</div>
@@ -153,21 +152,21 @@
 			<tbody>
 				<tr>
 					<td>
-						{% if nextLeasing %}<a href="{% url 'gestion:roomProfile' nextLeasing.room.pk %}">{{nextLeasing.room}}</a> (Prochaine chambre){% else %} Pas de prochaine chambre (<a href="{% url 'gestion:addNextRoom' tenant.pk %}">Prévoir une prochaine chambre</a>){% endif %}
+						{% if tenant.next_leasing %}<a href="{% url 'gestion:roomProfile' tenant.next_leasing.room.pk %}">{{tenant.next_leasing.room}}</a> (Prochaine chambre){% else %} Pas de prochaine chambre (<a href="{% url 'gestion:addNextRoom' tenant.pk %}">Prévoir une prochaine chambre</a>){% endif %}
 					</td>
 					<td></td>
 					<td></td>
-					<td>{% if nextLeasing %}<a href="{% url 'gestion:leasingProfile' nextLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
+					<td>{% if tenant.next_leasing %}<a href="{% url 'gestion:leasingProfile' tenant.next_leasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
 				</tr>
 				<tr>
 					<td>
-						{% if actualLeasing %}<a href="{% url 'gestion:roomProfile' actualLeasing.room.pk %}">{{actualLeasing.room}}</a> (Chambre actuelle){% else %}Pas de chambre actuellement (<a href="{% url 'gestion:tenantMoveInDirect' tenant.pk %}">Attribuer une chambre</a>){% endif %}
+						{% if tenant.current_leasing %}<a href="{% url 'gestion:roomProfile' tenant.current_leasing.room.pk %}">{{tenant.current_leasing.room}}</a> (Chambre actuelle){% else %}Pas de chambre actuellement (<a href="{% url 'gestion:tenantMoveInDirect' tenant.pk %}">Attribuer une chambre</a>){% endif %}
 					</td>
-					<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
+					<td>{% if tenant.current_leasing %}{{tenant.current_leasing.date_of_entry}}{% endif %}</td>
 					<td></td>
-					<td>{% if actualLeasing %}<a href="{% url 'gestion:leasingProfile' actualLeasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
+					<td>{% if tenant.current_leasing %}<a href="{% url 'gestion:leasingProfile' tenant.current_leasing.pk %}"><i class="fa fa-folder-open"></i></a>{% endif %}</td>
 				</tr>
-				{% for leasing in leasings %}
+				{% for leasing in tenant.previous_leasings %}
 				<tr>
 					<td><a href="{% url 'gestion:roomProfile' leasing.room.pk %}">{{leasing.room}}</a></td>
 					<td>{{leasing.date_of_entry}}</td>

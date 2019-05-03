@@ -50,21 +50,21 @@
 				<tbdoy>
 					<tr>
 						<td>
-							{% if nextLeasing %}{{nextLeasing.tenant}} (Prochain locataire){% else %}Pas de prochain locataire{% endif %}
+							{% if room.next_leasing %}{{room.next_leasing.tenant}} (Prochain locataire){% else %}Pas de prochain locataire{% endif %}
 						</td>
 						<td></td>
 						<td></td>
-						<td>{% if nextLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
+						<td>{% if room.next_leasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
 					</tr>
 					<tr>
 						<td>
-							{% if actualLeasing %}{{actualLeasing.tenant}} (Locataire actuel){% else %}Chambre vide{% endif %}
+							{% if room.current_leasing %}{{room.current_leasing.tenant}} (Locataire actuel){% else %}Chambre vide{% endif %}
 						</td>
-						<td>{% if actualLeasing %}{{actualLeasing.date_of_entry}}{% endif %}</td>
+						<td>{% if room.current_leasing %}{{room.current_leasing.date_of_entry}}{% endif %}</td>
 						<td></td>
-						<td>{% if actualLeasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
+						<td>{% if room.current_leasing %}<i class="fa fa-folder-open"></i>{% endif %}</td>
 					</tr>
-					{% for leasing in leasings %}
+					{% for leasing in room.previous_leasings %}
 					<tr>
 						<td>{{leasing.tenant}}</td>
 						<td>{{leasing.date_of_entry}}</td>
