@@ -6,6 +6,9 @@ from .utils import ODTGenerator
 
 from datetime import datetime
 
+from aloes.acl import admin_required
+
+@admin_required
 def apl_infos(request, pk):
     """
     pk : primary key of a leasing
@@ -14,6 +17,7 @@ def apl_infos(request, pk):
     template = ODTGenerator('generate_docs/apl_infos.odt', 'apl_infos_' + leasing.tenant.first_name + leasing.tenant.name + '.odt')
     return template.render({'leasing': leasing})
 
+@admin_required
 def rent_contract(request, pk):
     """
     pk : primary key of a leasing
@@ -33,6 +37,7 @@ def rent_contract(request, pk):
         template = ODTGenerator('generate_docs/rent_contract_aloes1.odt', 'contrat_location_' + leasing.tenant.first_name + leasing.tenant.name + '_aloes1.odt')
     return template.render({'leasing': leasing, 'tenant': tenant, 'gender': gender, 'born_accorded': born_accorded, 'room': room})
 
+@admin_required
 def civil_status(request, pk):
     """
     pk : primary key of a leasing
@@ -44,6 +49,7 @@ def civil_status(request, pk):
     template = ODTGenerator('generate_docs/civil_status.odt', 'etat_civil' + leasing.tenant.first_name + leasing.tenant.name + '.odt')
     return template.render({'leasing': leasing, 'tenant': tenant, 'room': room, 'total_cheque': total_cheque})
 
+@admin_required
 def guarantee(request,pk):
     """
     pk : a primary key of a leasing
@@ -58,6 +64,7 @@ def guarantee(request,pk):
     template = ODTGenerator('generate_docs/guarantee.odt', 'engagement_caution_' + leasing.tenant.first_name + leasing.tenant.name + '.odt')
     return template.render({'leasing': leasing, 'room': room, 'address': address, 'total_rent': room.rentType.total_rent, 'total_rent_48': room.rentType.total_rent * 48, 'tenant': tenant})
 
+@admin_required
 def insurance_expiration(request, pk):
     """
     pk : a primary key of a leasing
@@ -66,7 +73,7 @@ def insurance_expiration(request, pk):
     template = ODTGenerator('generate_docs/insurance_expiration.odt', 'expiration_assurance_' + tenant.first_name + tenant.name + '.odt')
     return template.render({'tenant': tenant, 'now': datetime.now()})
 
-
+@admin_required
 def lease_end_attestation(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.date_of_departure):
@@ -82,6 +89,7 @@ def lease_end_attestation(request, pk):
         messages.error(request, "Impossible de générer le document : le locataire n'a pas fini son bail.")
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': pk}))
 
+@admin_required
 def lease_attestation(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.has_room):
@@ -98,6 +106,7 @@ def lease_attestation(request, pk):
         messages.error(request, "Impossible de générer le document : le locataire n'a pas de chambre.")
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': pk}))
 
+@admin_required
 def lease_attestation_english(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
     if(tenant.has_room):
@@ -114,6 +123,7 @@ def lease_attestation_english(request, pk):
         messages.error(request, "Impossible de générer le document : le locataire n'a pas de chambre.")
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': pk}))
 
+@admin_required
 def tenant_record(request, pk):
     leasing = get_object_or_404(Leasing, pk=pk)
     tenant = leasing.tenant

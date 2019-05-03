@@ -48,7 +48,7 @@ class SearchForm(forms.Form):
 class CreateTenantForm(forms.ModelForm):
     class Meta:
         model = Tenant
-        exclude = ('pillow', 'pillowcase', 'sheet', 'waterproof_undersheet', 'leaving', 'date_of_departure', 'blanket')
+        exclude = ('pillow', 'pillowcase', 'sheet', 'waterproof_undersheet', 'leaving', 'date_of_departure', 'blanket', 'current_leasing', 'next_leasing')
         widgets = {
             'date_of_entry': DatePicker(),
         }
@@ -116,7 +116,7 @@ class selectRoomWNTForm(forms.Form):
     room = forms.ModelChoiceField(queryset=Room.objects.filter(next_leasing=None), required=True, label="Chambre")
 
 class tenantMoveInDirectForm(forms.Form):
-    room = forms.ModelChoiceField(queryset=Room.objects.filter(actualTenant=None), required=True, label="Chambre", widget=autocomplete.ModelSelect2(url='gestion:emptyRoomAutocomplete'))
+    room = forms.ModelChoiceField(queryset=Room.objects.filter(current_leasing=None), required=True, label="Chambre", widget=autocomplete.ModelSelect2(url='gestion:emptyRoomAutocomplete'))
     date = forms.DateField(widget=DatePicker(), required=True)
 
 class roomMoveInDirectForm(forms.Form):

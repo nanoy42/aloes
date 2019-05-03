@@ -15,7 +15,7 @@ from django.contrib.auth.decorators import login_required
 from aloes.utils import ImprovedCreateView, ImprovedUpdateView, ImprovedDeleteView, LockableUpdateView
 
 
-class DocumentIndex(ListView, AdminRequiredMixin):
+class DocumentIndex(AdminRequiredMixin, ListView):
     model = Document
     context_object_name = "documents"
     template_name = "documents/documents_index.html"
@@ -26,7 +26,7 @@ class DocumentIndex(ListView, AdminRequiredMixin):
         context['active'] = "documents"
         return context
 
-class DocumentCreate(ImprovedCreateView, AdminRequiredMixin):
+class DocumentCreate(AdminRequiredMixin, ImprovedCreateView):
     model = Document
     fields = "__all__"
     template_name = "form.html"
@@ -40,7 +40,7 @@ class DocumentCreate(ImprovedCreateView, AdminRequiredMixin):
         "active": "documents"
     }
 
-class DocumentEdit(LockableUpdateView, AdminRequiredMixin):
+class DocumentEdit(AdminRequiredMixin, LockableUpdateView):
     model = Document
     fields = "__all__"
     template_name = "form.html"
@@ -49,7 +49,7 @@ class DocumentEdit(LockableUpdateView, AdminRequiredMixin):
     lock_message = "Impossible de modifier le document : il est en cours de modification"
     context = {"form_title": "Modification d'un document", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "documents", "file": True}
 
-class DocumentDelete(ImprovedDeleteView, AdminRequiredMixin):
+class DocumentDelete(AdminRequiredMixin, ImprovedDeleteView):
     model = Document
     context_object_name = "object_name"
     template_name = "delete.html"

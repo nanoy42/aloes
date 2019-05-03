@@ -15,7 +15,7 @@
 		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
 			{% if room.current_leasing %}<a class="dropdown-item" href="{% url 'gestion:moveOut' 'room' room.current_leasing.tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Vider la chambre</a>{% endif %}
 			{% if room.next_leasing %}
-			<a class="dropdown-item" href="{% url 'gestion:moveIn' 'room' room.next_leasing.tenant.pk %}"><i class="fa fa-sign-in-alt"></i> Enménager le prochain locataire</a>
+			<a class="dropdown-item" href="{% url 'gestion:moveIn' 'room' room.next_leasing.tenant.pk %}"><i class="fa fa-sign-in-alt"></i> Emménager le prochain locataire</a>
 			<a class="dropdown-item" href="{% url 'gestion:cancelNextRoom' 'room' room.next_leasing.tenant.pk %}"><i class="fa fa-times"></i> Annuler le prochain locataire</a>
 			{% endif %}
 			{% if room.current_leasing or room.next_leasing %}
@@ -86,7 +86,7 @@
 				</tr>
 				<tr>
 					<td>
-						{% if room.current_leasing %}<a href="{% url 'gestion:tenantProfile' room.current_leasing.tenant.pk %}">{{room.current_leasing.tenant}}</a> (Locataire actuel){% else %}Chambre vide (<a href="{% url 'gestion:roomMoveInDirect' room.pk %}">Enménager un locataire</a>){% endif %}
+						{% if room.current_leasing %}<a href="{% url 'gestion:tenantProfile' room.current_leasing.tenant.pk %}">{{room.current_leasing.tenant}}</a> (Locataire actuel){% else %}Chambre vide (<a href="{% url 'gestion:roomMoveInDirect' room.pk %}">Emménager un locataire</a>){% endif %}
 					</td>
 					<td>{% if room.current_leasing %}{{room.current_leasing.date_of_entry}}{% endif %}</td>
 					<td></td>

@@ -11,7 +11,7 @@
 		</button>
 		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
 			{% if tenant.next_leasing %}
-			<a class="dropdown-item" href="{% url 'gestion:moveIn' 'tenant' tenant.pk %}"><i class="fa fa-sign-in-alt"></i> Enménagement</a>
+			<a class="dropdown-item" href="{% url 'gestion:moveIn' 'tenant' tenant.pk %}"><i class="fa fa-sign-in-alt"></i> Emménagement</a>
 			<a class="dropdown-item" href="{% url 'gestion:cancelNextRoom' 'tenant' tenant.pk %}"><i class="fa fa-times"></i> Annuler la prochaine chambre</a>
 			{% endif %}
 			{% if tenant.current_leasing %}

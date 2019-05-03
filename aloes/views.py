@@ -60,7 +60,7 @@ def loginView(request):
         if(user is not None):
             login(request, user)
             messages.success(request, "Bienvenue " + user.username)
-            return redirect(reverse('home'))
+            return redirect(request.GET.get('next', '/'))
         else:
             messages.error(request, "Nom d'utilisateur et/ou mot de passe incorrect")
     return render(request, 'form.html', {
@@ -99,7 +99,7 @@ def indexAccounts(request):
     users = User.objects.all()
     return render(request, "index_accounts.html", {"users": users})
 
-class UserCreate(ImprovedCreateView, SuperuserRequiredMixin):
+class UserCreate(SuperuserRequiredMixin, ImprovedCreateView):
     model = User
     fields = ('username', 'first_name', 'last_name', 'email')
     template_name = "form.html"
@@ -120,7 +120,7 @@ class UserCreate(ImprovedCreateView, SuperuserRequiredMixin):
         messages.success(self.request, self.success_message)
         return super(ModelFormMixin, self).form_valid(form)
 
-class UserEdit(ImprovedUpdateView, SuperuserRequiredMixin):
+class UserEdit(SuperuserRequiredMixin, ImprovedUpdateView):
     model = User
     fields = ('username', 'first_name', 'last_name', 'email')
     template_name = "form.html"
@@ -133,7 +133,7 @@ class UserEdit(ImprovedUpdateView, SuperuserRequiredMixin):
         "active": "accounts",
     }
 
-class UserDelete(ImprovedDeleteView, SuperuserRequiredMixin):
+class UserDelete(SuperuserRequiredMixin, ImprovedDeleteView):
     model = User
     context_object_name = "object_name"
     template_name = "delete.html"

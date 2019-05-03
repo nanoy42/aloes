@@ -44,14 +44,14 @@ class TenantManager(models.Manager):
         try:
             ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.next_room]
             return Tenant.objects.filter(id__in=ids)
-        except OperationalError:
+        except:
             return None
 
     def has_no_room(self):
         try:
             ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.room]
             return Tenant.objects.filter(id__in=ids)
-        except OperationalError:
+        except:
             return None
 
     def has_room(self):
@@ -124,8 +124,12 @@ class Tenant(models.Model):
 
     @property
     def previous_leasings(self):
-        leasings = Leasing.objects.filter(tenant=self).exclude(pk=self.current_leasing.pk).exclude(pk=next_leasing.pk).order_by['-pk']
-        return leasings
+        leasings = Leasing.objects.filter(tenant=self)
+        if self.current_leasing:
+            leasings = leasings.exclude(pk=self.current_leasing.pk)
+        if self.next_leasing:
+            leasings = leasings.exclude(pk=next_leasing.pk).order_by['-pk']
+        return leasings.order_by('-pk')
 
     @property
     def previous_rooms(self):
@@ -167,8 +171,12 @@ class Room(models.Model):
 
     @property
     def previous_leasings(self):
-        leasings = Leasing.objects.filter(room=self).exclude(pk=self.current_leasing.pk).exclude(pk=next_leasing.pk).order_by['-pk']
-        return leasings
+        leasings = Leasing.objects.filter(room=self)
+        if self.current_leasing:
+            leasings = leasings.exclude(pk=self.current_leasing.pk)
+        if self.next_leasing:
+            leasings = leasings.exclude(pk=next_leasing.pk).order_by['-pk']
+        return leasings.order_by('-pk')
 
     @property
     def previous_tenants(self):
