@@ -56,7 +56,7 @@ class CreateTenantForm(forms.ModelForm):
 class TenantForm(forms.ModelForm):
     class Meta:
         model = Tenant
-        fields = "__all__"
+        exclude = ('current_leasing', 'next_leasing')
         widgets = {
             'date_of_entry': DatePicker(),
             'date_of_departure': DatePicker(),
@@ -70,7 +70,7 @@ class CreateRoomForm(forms.ModelForm):
 class RoomForm(forms.ModelForm):
     class Meta:
         model = Room
-        fields = "__all__"
+        exclude = ('current_leasing', 'next_leasing')
 
 class LeasingForm(forms.ModelForm):
     class Meta:
