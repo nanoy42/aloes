@@ -51,6 +51,7 @@ class CreateTenantForm(forms.ModelForm):
         exclude = ('pillow', 'pillowcase', 'sheet', 'waterproof_undersheet', 'leaving', 'date_of_departure', 'blanket', 'current_leasing', 'next_leasing')
         widgets = {
             'date_of_entry': DatePicker(),
+            'birthday': DatePicker(),
         }
 
 class TenantForm(forms.ModelForm):
@@ -60,6 +61,7 @@ class TenantForm(forms.ModelForm):
         widgets = {
             'date_of_entry': DatePicker(),
             'date_of_departure': DatePicker(),
+            'birthday': DatePicker(),
         }
 
 class CreateRoomForm(forms.ModelForm):
@@ -97,6 +99,13 @@ class LeasingForm(forms.ModelForm):
             "date_of_entry",
             "date_of_departure"
         ]
+        widgets = {
+            'date_of_entry': DatePicker(),
+            'date_of_departure': DatePicker(),
+            'contractDate': DatePicker(),
+            'insuranceDeadline': DatePicker(),
+            'apl': DatePicker(),
+        }
 
 class LeaveForm(forms.ModelForm):
     class Meta:
