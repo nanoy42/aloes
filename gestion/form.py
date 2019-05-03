@@ -1,4 +1,5 @@
 from django import forms
+from dal import autocomplete
 
 from aloes.widgets import DatePicker
 from .models import Renovation, School, Tenant, Room, Leasing
@@ -109,15 +110,15 @@ class DateForm(forms.Form):
     date = forms.DateField(widget=DatePicker(), required=True)
 
 class selectTenantWNRForm(forms.Form):
-    tenant = forms.ModelChoiceField(queryset=Tenant.objects.has_no_next_room(), required=True, label="Locataire")
+    tenant = forms.ModelChoiceField(queryset=Tenant.objects.has_no_next_room(), required=True, label="Locataire", widget=autocomplete.ModelSelect2(url='gestion:tenantWNRAutocomplete'))
 
 class selectRoomWNTForm(forms.Form):
     room = forms.ModelChoiceField(queryset=Room.objects.filter(next_leasing=None), required=True, label="Chambre")
 
 class tenantMoveInDirectForm(forms.Form):
-    room = forms.ModelChoiceField(queryset=Room.objects.filter(current_leasing=None), required=True, label="Chambre")
+    room = forms.ModelChoiceField(queryset=Room.objects.filter(actualTenant=None), required=True, label="Chambre", widget=autocomplete.ModelSelect2(url='gestion:emptyRoomAutocomplete'))
     date = forms.DateField(widget=DatePicker(), required=True)
 
 class roomMoveInDirectForm(forms.Form):
-    tenant = forms.ModelChoiceField(queryset=Tenant.objects.has_no_room(), required=True, label="Locataire")
+    tenant = forms.ModelChoiceField(queryset=Tenant.objects.has_no_room(), required=True, label="Locataire", widget=autocomplete.ModelSelect2(url='gestion:tenantWithoutRoomAutocomplete'))
     date = forms.DateField(widget=DatePicker(), required=True)
