@@ -92,8 +92,8 @@ def lease_end_attestation(request, pk):
 @admin_required
 def lease_attestation(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
-    if(tenant.has_room):
-        leasing = get_object_or_404(Leasing, tenant=tenant, room=tenant.room)
+    if(tenant.current_leasing):
+        leasing = tenant.current_leasing
         if(tenant.gender == "F"):
             gender = "Mme."
             born_accorded = "née"
@@ -109,8 +109,8 @@ def lease_attestation(request, pk):
 @admin_required
 def lease_attestation_english(request, pk):
     tenant = get_object_or_404(Tenant, pk=pk)
-    if(tenant.has_room):
-        leasing = get_object_or_404(Leasing, tenant=tenant, room=tenant.room)
+    if(tenant.current_leasing):
+        leasing = tenant.current_leasing
         if(tenant.gender == "F"):
             gender = "Mme."
             born_accorded = "née"
@@ -130,3 +130,16 @@ def tenant_record(request, pk):
     room = leasing.room
     template = ODTGenerator('generate_docs/tenant_record.odt', 'fiche_locataire_' + tenant.first_name + tenant.name + '.odt')
     return template.render({'leasing': leasing, 'tenant': tenant, 'room': room, 'now': datetime.now()})
+
+
+@admin_required
+def reservation_attestation(request, pk):
+    """
+    pk : Primary key of a user
+    """
+    tenant = get_object_or_404(Tenant, pk=pk)
+    if not tenant.next_leasing:
+        messages.error(request, "Le locataire n'a pas réservé de chambre")
+        return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
+    template = ODTGenerator('generate_docs/reservation_attestation.odt', 'attestation_reservation_' + tenant.first_name + tenant.name + '.odt')
+    return template.render({'tenant': tenant, 'now': datetime.now()})

@@ -122,7 +122,7 @@ class selectTenantWNRForm(forms.Form):
     tenant = forms.ModelChoiceField(queryset=Tenant.objects.has_no_next_room(), required=True, label="Locataire", widget=autocomplete.ModelSelect2(url='gestion:tenantWNRAutocomplete'))
 
 class selectRoomWNTForm(forms.Form):
-    room = forms.ModelChoiceField(queryset=Room.objects.filter(next_leasing=None), required=True, label="Chambre")
+    room = forms.ModelChoiceField(queryset=Room.objects.filter(next_leasing=None), required=True, label="Chambre", widget=autocomplete.ModelSelect2(url='gestion:noNextTenantRoomAutocomplete'))
 
 class tenantMoveInDirectForm(forms.Form):
     room = forms.ModelChoiceField(queryset=Room.objects.filter(current_leasing=None), required=True, label="Chambre", widget=autocomplete.ModelSelect2(url='gestion:emptyRoomAutocomplete'))

@@ -251,14 +251,14 @@ class RoomCreate(AdminRequiredMixin, ImprovedCreateView):
 @admin_required
 def addNextTenant(request, pk):
     room = get_object_or_404(Room, pk=pk)
-    if(room.nextTenant):
+    if(room.next_leasing):
         messages.error(request, "Cette chambre est déjà reservée")
         return redirect(reverse('gestion:roomProfile', kwargs={'pk':pk}))
     else:
         form = selectTenantWNRForm(request.POST or None)
         if(form.is_valid()):
             tenant = form.cleaned_data['tenant']
-            if(tenant.has_next_room):
+            if(tenant.next_leasing):
                 messages.error(request, "Ce locataire a déjà reservé une chambre")
             else:
                 leasing = Leasing(room=room, tenant=tenant)
@@ -361,8 +361,11 @@ def addNextRoom(request, pk):
     else:
         form = selectRoomWNTForm(request.POST or None)
         if(form.is_valid()):
+            if 'cancel' in request.POST:
+                messages.success(self.request, "Demande annulée")
+                return redirect(reverse('gestion:tenantProfile', kwargs={'pk':pk}))
             room = form.cleaned_data['room']
-            if(room.nextTenant):
+            if(room.next_leasing):
                 messages.error(request, "Cette chambre est déjà réservée")
             else:
                 leasing = Leasing(room=room, tenant=tenant)
@@ -461,7 +464,7 @@ def leave(request, pk):
     message = "Vous vous apprêtez à faire quitter de la résidence " + str(tenant) + ". Pour continuer, indiquer la date officielle de départ de la résidence"
     if(leaveForm.is_valid()):
         leaveForm.save()
-        if(tenant.has_room):
+        if(tenant.current_leasing):
             leasing = tenant.current_leasing
             leasing.date_of_departure = leaveForm.cleaned_data['date_of_departure']
             leasing.save()
@@ -498,6 +501,7 @@ def moveOut(request, pk, mode):
         room.current_leasing = None
         room.save()
         tenant.current_leasing = None
+        tenant.save()
         if(mode == "room"):
             messages.success(request, "La chambre a bien été vidé")
             return redirect(reverse("gestion:roomProfile", kwargs={"pk":room.pk}))
@@ -528,8 +532,9 @@ def moveIn(request, pk, mode):
             messages.error(request, "Ce locataire possède actuellement une chambre. Déménagez le avant de l'emménager")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
     moveInForm = DateForm(request.POST or None)
-    message = "Veuillez indiquer la date d'entrée officielle dans la chambre " + str(tenant.nextRoom) + " pour " + str(tenant)
+    message = "Veuillez indiquer la date d'entrée officielle dans la chambre " + str(tenant.next_room) + " pour " + str(tenant)
     if(moveInForm.is_valid()):
+        room = tenant.next_room
         leasing = tenant.next_leasing
         leasing.date_of_entry=moveInForm.cleaned_data['date']
         leasing.save()
@@ -562,7 +567,7 @@ def cancelNextRoom(request, pk, mode):
         return redirect(reverse('gestion:roomProfile', kwargs={"pk":room.pk}))
     else:
         messages.success(request, "La prochaine chambre a été annulée")
-        return redirect(reverse('gestion:tenantProfile', kwargs={"pk":room.pk}))
+        return redirect(reverse('gestion:tenantProfile', kwargs={"pk":tenant.pk}))
 
 ########## Maps ##########
 
@@ -625,7 +630,7 @@ def export_csv(request):
             tenant_text = str(room.current_leasing.tenant) + "(" + str(room.current_leasing.tenant.email) +")"
         else:
             tenant_text = "Pas de locataire actuel"
-        writer.writerow([str(room), tenant_text, str(room.nextTenant or "Pas réservée"), str(room.renovation or "Non indiqué"), str(room.rentType or "Non indiqué")])
+        writer.writerow([str(room), tenant_text, str(room.next_leasing.tenant or "Pas réservée"), str(room.renovation or "Non indiqué"), str(room.rentType or "Non indiqué")])
     tenants = Tenant.objects.has_no_room()
     for tenant in tenants:
         writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
@@ -649,7 +654,7 @@ class NoNextTenantRoomAutomplete(autocomplete.Select2QuerySetView):
         if not self.request.user.is_authenticated:
             return Room.object.none()
 
-        qs = Room.objects.filter(nextTenant=None)
+        qs = Room.objects.filter(next_leasing=None)
 
         if self.q :
             qs = qs.filter(room__istartswith=self.q)

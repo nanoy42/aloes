@@ -128,7 +128,7 @@ class Tenant(models.Model):
         if self.current_leasing:
             leasings = leasings.exclude(pk=self.current_leasing.pk)
         if self.next_leasing:
-            leasings = leasings.exclude(pk=next_leasing.pk).order_by['-pk']
+            leasings = leasings.exclude(pk=self.next_leasing.pk)
         return leasings.order_by('-pk')
 
     @property
@@ -175,7 +175,7 @@ class Room(models.Model):
         if self.current_leasing:
             leasings = leasings.exclude(pk=self.current_leasing.pk)
         if self.next_leasing:
-            leasings = leasings.exclude(pk=next_leasing.pk).order_by['-pk']
+            leasings = leasings.exclude(pk=self.next_leasing.pk)
         return leasings.order_by('-pk')
 
     @property
