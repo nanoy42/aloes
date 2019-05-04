@@ -136,6 +136,26 @@ class Tenant(models.Model):
         pks = [leasing.room.pk for leasing in self.previous_leasings]
         return Room.objects.filter(pk__in=pks)
 
+    @property
+    def civil_status_completed(self):
+        return self.name and self.first_name and self.gender and self.school
+
+    @property
+    def birth_completed(self):
+        return self.birthday and self.birthcity and self.birthdepartement and self.birthcountry
+    
+    @property
+    def address_completed(self):
+        return self.street_number and self.street and self.city and self.country
+
+    @property
+    def phone_mail_completed(self):
+        return self.email and self.cellphone and self.phone
+
+    @property
+    def completed(self):
+        return self.civil_status_completed and self.birth_completed and self.address_completed and self.phone_mail_completed
+
 class Room(models.Model):
     class Meta:
         verbose_name = "Chambre"
@@ -212,7 +232,11 @@ class Leasing(models.Model):
     caf = models.CharField(max_length=255, verbose_name="CAF", blank=True)
     residence_certificate = models.BooleanField(default=False, verbose_name="Certificat de domicile")
     check_guarantee = models.BooleanField(default=False, verbose_name="Chèque pour le complément de dépot de garantie")
-    guarantee = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Garantie", blank=True, null=True)
+    guarantee = models.BooleanField(default=False, verbose_name="Engagement de caution")
+    photo = models.BooleanField(default=False, verbose_name="Photo d'identité")
+    internal_rules_signed = models.BooleanField(default=False, verbose_name="Règlement intérieur signé")
+    school_certificate = models.BooleanField(default=False, verbose_name="Certificat de scolarité")
+    debit_authorization = models.BooleanField(default=False, verbose_name="Autorisation de prélèvement")
     issue = models.BooleanField(default=False, verbose_name="Problème")
     missing_documents = models.TextField(verbose_name="Documents manquants", blank=True)
     date_of_entry = models.DateField(verbose_name="Date d'entrée", blank=True, null=True)

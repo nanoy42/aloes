@@ -4,28 +4,15 @@
 <h3>{{leasing}}</h3>
 <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
 	<a href="{% url 'gestion:editLeasing' leasing.pk %}" type="submit" class="btn btn-primary">Modifier</a>
-
-	<div class="btn-group" role="group">
-		<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			Actions
-		</button>
-		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-			<a class="dropdown-item" href="#">Emménagement</a>
-			<a class="dropdown-item" href="#">Déménagement</a>
-			<a class="dropdown-item" href="#">Emménagement-déménagement</a>
-			<div class="dropdown-divider"></div>
-			<a class="dropdown-item" href="#">Quitter la residence</a>
-		</div>
-	</div>
 	<div class="btn-group" role="group">
 		<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			Documents
 		</button>
 		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-			<a class="dropdown-item" href="{% url 'generate_docs:aplInfos' leasing.pk %}">APL infos</a>
-			<a class="dropdown-item" href="{% url 'generate_docs:rentContract' leasing.pk %}">Contrat de location</a>
-			<a class="dropdown-item" href="{% url 'generate_docs:civilStatus' leasing.pk %}">État civil</a>
-			<a class="dropdown-item" href="{% url 'generate_docs:guarantee' leasing.pk %}">Engagement de caution</a>
+			<a class="dropdown-item{% if not leasing.date_of_entry %} tooltip2{% endif %}" href="{% url 'generate_docs:aplInfos' leasing.pk %}"{% if not leasing.date_of_entry %} title="Pas de date d'entrée pour le dossier"{% endif %}>APL infos{% if not leasing.date_of_entry %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
+			<a class="dropdown-item{% if not tenant.birth_completed or not leasing.date_of_entry %} tooltip2{% endif %}" href="{% url 'generate_docs:rentContract' leasing.pk %}" {% if not tenant.birth_completed or not leasing.date_of_entry %}title="{% if not tenant.birth_completed %}Il pourrait manquer des informations au locataire{% endif %}{% if not tenant.birth_completed and not leasing.date_of_entry %};{% endif %}{% if not leasing.date_of_entry %}Pas de date d'entrée{% endif %}"{% endif %}>Contrat de location{% if not tenant.birth_completed or not leasing.date_of_entry %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
+			<a class="dropdown-item{% if not leasing.tenant.completed %} tooltip2{% endif %}" href="{% url 'generate_docs:civilStatus' leasing.pk %}" {% if not leasing.tenant.completed %} title="Il pourrait manquer des informations au locataire"{% endif %}>État civil {% if not leasing.tenant.completed %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
+			<a class="dropdown-item{% if not leasing.contractDate %} tooltip2{% endif %}" href="{% url 'generate_docs:guarantee' leasing.pk %}" {% if not leasing.contractDate %}title="Aucune date de contrat"{% endif %}>Engagement de caution{% if not leasing.contractDate %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
 			<a class="dropdown-item" href="{% url 'generate_docs:insuranceExpiration' leasing.pk %}">Expiration assurance</a>
 			<a class="dropdown-item" href="{% url 'generate_docs:tenantRecord' leasing.pk %}">Fiche locataire</a> 
 		</div>
@@ -130,4 +117,10 @@
 		<div class="form-group"><label for="id_missing_documents">Documents manquants</label><textarea name="missing_documents" cols="40" rows="10" class="form-control" placeholder="Documents manquants" title="" id="id_missing_documents" disabled>{{leasing.missing_documents}}</textarea></div>
 	</div>
 </div>
+	
+<script>
+$(function () {
+	$('.tooltip2').tooltip() //tooltip class is already taken
+})
+</script>
 {% endblock %}

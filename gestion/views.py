@@ -257,6 +257,9 @@ def addNextTenant(request, pk):
     else:
         form = selectTenantWNRForm(request.POST or None)
         if(form.is_valid()):
+            if 'cancel' in request.POST:
+                messages.success(self.request, "Demande annulée")
+                return redirect(request.POST.get('cancel') or "home")
             tenant = form.cleaned_data['tenant']
             if(tenant.next_leasing):
                 messages.error(request, "Ce locataire a déjà reservé une chambre")
@@ -281,6 +284,9 @@ def roomMoveInDirect(request, pk):
     else:
         form = roomMoveInDirectForm(request.POST or None)
         if(form.is_valid()):
+            if 'cancel' in request.POST:
+                messages.success(self.request, "Demande annulée")
+                return redirect(request.POST.get('cancel') or "home")
             tenant = form.cleaned_data['tenant']
             if(tenant.room):
                 messages.error(request, "Ce locataire possède déjà une chambre")
@@ -363,7 +369,7 @@ def addNextRoom(request, pk):
         if(form.is_valid()):
             if 'cancel' in request.POST:
                 messages.success(self.request, "Demande annulée")
-                return redirect(reverse('gestion:tenantProfile', kwargs={'pk':pk}))
+                return redirect(request.POST.get('cancel') or "home")
             room = form.cleaned_data['room']
             if(room.next_leasing):
                 messages.error(request, "Cette chambre est déjà réservée")
@@ -388,6 +394,9 @@ def tenantMoveInDirect(request, pk):
     else:
         form = tenantMoveInDirectForm(request.POST or None)
         if(form.is_valid()):
+            if 'cancel' in request.POST:
+                messages.success(self.request, "Demande annulée")
+                return redirect(request.POST.get('cancel') or "home")
             room = form.cleaned_data['room']
             if(room.current_leasing):
                 messages.error(request, "Cette chambre n'est pas vide")
@@ -463,6 +472,9 @@ def leave(request, pk):
     leaveForm = LeaveForm(request.POST or None, instance=tenant)
     message = "Vous vous apprêtez à faire quitter de la résidence " + str(tenant) + ". Pour continuer, indiquer la date officielle de départ de la résidence"
     if(leaveForm.is_valid()):
+        if 'cancel' in request.POST:
+            messages.success(self.request, "Demande annulée")
+            return redirect(request.POST.get('cancel') or "home")
         leaveForm.save()
         if(tenant.current_leasing):
             leasing = tenant.current_leasing
@@ -494,6 +506,9 @@ def moveOut(request, pk, mode):
         form_title = "Déménager " + str(tenant)
         form_button = "Déménager"
     if(moveOutForm.is_valid()):
+        if 'cancel' in request.POST:
+            messages.success(self.request, "Demande annulée")
+            return redirect(request.POST.get('cancel') or "home")
         leasing = tenant.current_leasing
         leasing.date_of_departure = moveOutForm.cleaned_data['date']
         leasing.save()
@@ -534,6 +549,9 @@ def moveIn(request, pk, mode):
     moveInForm = DateForm(request.POST or None)
     message = "Veuillez indiquer la date d'entrée officielle dans la chambre " + str(tenant.next_room) + " pour " + str(tenant)
     if(moveInForm.is_valid()):
+        if 'cancel' in request.POST:
+            messages.success(self.request, "Demande annulée")
+            return redirect(request.POST.get('cancel') or "home")
         room = tenant.next_room
         leasing = tenant.next_leasing
         leasing.date_of_entry=moveInForm.cleaned_data['date']

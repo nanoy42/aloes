@@ -71,7 +71,7 @@ def insurance_expiration(request, pk):
     """
     tenant = get_object_or_404(Leasing, pk=pk).tenant
     template = ODTGenerator('generate_docs/insurance_expiration.odt', 'expiration_assurance_' + tenant.first_name + tenant.name + '.odt')
-    return template.render({'tenant': tenant, 'now': datetime.now()})
+    return template.render({'leasing': leasing, 'tenant': tenant, 'now': datetime.now(), 'user': request.user})
 
 @admin_required
 def lease_end_attestation(request, pk):
@@ -142,4 +142,4 @@ def reservation_attestation(request, pk):
         messages.error(request, "Le locataire n'a pas réservé de chambre")
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     template = ODTGenerator('generate_docs/reservation_attestation.odt', 'attestation_reservation_' + tenant.first_name + tenant.name + '.odt')
-    return template.render({'tenant': tenant, 'now': datetime.now()})
+    return template.render({'tenant': tenant, 'now': datetime.now(), 'user': request.user})
