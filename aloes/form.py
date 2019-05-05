@@ -8,7 +8,7 @@ class HomeTextEditForm(forms.ModelForm):
     """Display a form to edit home text."""
     class Meta:
         model = GeneralPreferences
-        fields = ('home_text', )
+        fields = ('home_text', 'english_home_text')
 
 class LoginForm(forms.Form):
     """Display a login form."""

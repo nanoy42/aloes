@@ -18,8 +18,8 @@ class DocumentIndex(AdminRequiredMixin, ListView): # pylint: disable=too-many-an
     template_name = "documents/documents_index.html"
     queryset = Document.objects.all()
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(object_list, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context['active'] = "documents"
         return context
 

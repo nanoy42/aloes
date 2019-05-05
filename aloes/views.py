@@ -25,14 +25,17 @@ def home(request):
 
     :template:`home.html`
     """
-    home_text = GeneralPreferences.objects.get_or_create()[0].home_text
+    general_preferences, _ = GeneralPreferences.objects.get_or_create()
+    home_text = general_preferences.home_text
+    english_home_text = general_preferences.english_home_text
     documents = Document.objects.all()
     return render(
         request,
         "home.html",
         {
-            'home_text':home_text,
-            'documents':documents,
+            'home_text': home_text,
+            'english_home_text': english_home_text,
+            'documents': documents,
             'active': 'home'
         }
     )

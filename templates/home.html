@@ -1,7 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
 <h3>Bienvenue sur l'intranet ALOES</h3>
-<p>{{home_text}}</p>
+<div class="row">
+    <div class="col-6">
+        <p>{{home_text}}</p>
+    </div>
+    <div class="col-6">
+        {{english_home_text}}
+    </div>
+</div>
+
 {% for document in documents %}
 <h5>{{document.name}}</h5>
 <p>{{document.description}}</p>
