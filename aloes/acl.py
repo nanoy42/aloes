@@ -1,7 +1,6 @@
+"""Acl for the project."""
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.core.exceptions import PermissionDenied
-
 
 def admin_required(view):
     """Verify that the current user is staff (for views)."""
