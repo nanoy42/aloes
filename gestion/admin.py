@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import School, Renovation, Rent, Tenant, Room, Leasing, Map
+from .models import Leasing, Map, Renovation, Rent, Room, School, Tenant
 
 admin.site.register(School)
 admin.site.register(Renovation)

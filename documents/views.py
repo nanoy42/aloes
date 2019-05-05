@@ -1,32 +1,30 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView
-from django.urls import reverse_lazy, reverse
-from django.contrib import messages
-from lock_tokens.exceptions import AlreadyLockedError
-from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
-
-
+"""Views of documents app."""
 import os
 
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy
+from django.views.generic import ListView
+from aloes.acl import AdminRequiredMixin, admin_required
+from aloes.utils import (ImprovedCreateView, ImprovedDeleteView,
+                         LockableUpdateView)
+
 from .models import Document
-from .forms import DocumentForm
-from aloes.acl import admin_required, superuser_required, AdminRequiredMixin, SuperuserRequiredMixin
-from django.contrib.auth.decorators import login_required
-from aloes.utils import ImprovedCreateView, ImprovedUpdateView, ImprovedDeleteView, LockableUpdateView
 
 
-class DocumentIndex(AdminRequiredMixin, ListView):
+class DocumentIndex(AdminRequiredMixin, ListView): # pylint: disable=too-many-ancestors
+    """Generic class based view to list all documents."""
     model = Document
     context_object_name = "documents"
     template_name = "documents/documents_index.html"
     queryset = Document.objects.all()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list, **kwargs)
         context['active'] = "documents"
         return context
 
-class DocumentCreate(AdminRequiredMixin, ImprovedCreateView):
+class DocumentCreate(AdminRequiredMixin, ImprovedCreateView): # pylint: disable=too-many-ancestors
+    """Class based view to create a document."""
     model = Document
     fields = "__all__"
     template_name = "form.html"
@@ -40,16 +38,24 @@ class DocumentCreate(AdminRequiredMixin, ImprovedCreateView):
         "active": "documents"
     }
 
-class DocumentEdit(AdminRequiredMixin, LockableUpdateView):
+class DocumentEdit(AdminRequiredMixin, LockableUpdateView): # pylint: disable=too-many-ancestors
+    """Class based view to edit a document."""
     model = Document
     fields = "__all__"
     template_name = "form.html"
     success_url = reverse_lazy('documents:index')
     success_message = "Le document a bien été modifié"
     lock_message = "Impossible de modifier le document : il est en cours de modification"
-    context = {"form_title": "Modification d'un document", "form_icon": "pencil-alt", "form_button": "Modifier", "active": "documents", "file": True}
+    context = {
+        "form_title": "Modification d'un document",
+        "form_icon": "pencil-alt",
+        "form_button": "Modifier",
+        "active": "documents",
+        "file": True
+    }
 
-class DocumentDelete(AdminRequiredMixin, ImprovedDeleteView):
+class DocumentDelete(AdminRequiredMixin, ImprovedDeleteView): # pylint: disable=too-many-ancestors
+    """Class based view to delete a document."""
     model = Document
     context_object_name = "object_name"
     template_name = "delete.html"
@@ -67,7 +73,8 @@ class DocumentDelete(AdminRequiredMixin, ImprovedDeleteView):
         return super().delete(request, *args, **kwargs)
 
 @admin_required
-def DocumentSwitchActive(request, pk):
+def document_switch_active(request, pk):
+    """Change active status of document wiith primary key pk."""
     document = get_object_or_404(Document, pk=pk)
     document.active = 1 - document.active
     document.save()

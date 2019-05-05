@@ -1,8 +1,10 @@
-from django.db import models
+"""Models of gestion app."""
 from colorfield.fields import ColorField
-from django.db.utils import OperationalError
+from django.db import models
+
 
 class School(models.Model):
+    """Store a school."""
     class Meta:
         verbose_name = "Ecole"
     name = models.CharField(max_length=255, verbose_name="Nom de l'école")
@@ -11,6 +13,7 @@ class School(models.Model):
         return self.name
 
 class Renovation(models.Model):
+    """Store a renovation level."""
     name = models.CharField(max_length=255, verbose_name="Nom ou niveau")
     description = models.TextField()
     color = ColorField(default="#FF0000", verbose_name="Couleur :")
@@ -19,13 +22,19 @@ class Renovation(models.Model):
         return self.name
 
 class Rent(models.Model):
+    """Store a rent type."""
     class Meta:
-        verbose_name="Loyer"
+        verbose_name = "Loyer"
+
     type = models.TextField(max_length=255, verbose_name="Genre")
     rent = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Loyer")
     service = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Forfait services")
     charges = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Charges")
-    application_fee = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Frais de dossier")
+    application_fee = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        verbose_name="Frais de dossier"
+    )
     surface = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Superficie")
 
     def __str__(self):
@@ -33,35 +42,43 @@ class Rent(models.Model):
 
     @property
     def supplements(self):
+        """Return supplements of rent which is service + charges."""
         return self.service + self.charges
 
     @property
     def total_rent(self):
-        return self.rent + self.supplements 
+        """Return the total rent which is the rent + supplements."""
+        return self.rent + self.supplements
 
 class TenantManager(models.Manager):
+    """Manager for Tenant model."""
+
     def has_no_next_room(self):
+        """Return queryset of tenants without next room (next leasing)."""
         try:
             ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.next_room]
             return Tenant.objects.filter(id__in=ids)
-        except:
+        except: # pylint: disable=bare-except
             return None
 
     def has_no_room(self):
+        """Return queryset of tenants with no room (current leasing)."""
         try:
             ids = [tenant.id for tenant in Tenant.objects.all() if not tenant.room]
             return Tenant.objects.filter(id__in=ids)
-        except:
+        except: # pylint: disable=bare-except
             return None
 
     def has_room(self):
+        """Return queryset of tenants with current room (current leasing)."""
         try:
             ids = [tenant.id for tenant in Tenant.objects.all() if tenant.room]
             return Tenant.objects.filter(id__in=ids)
-        except OperationalError:
+        except: # pylint: disable=bare-except
             return None
 
 class Tenant(models.Model):
+    """Store a tenant."""
     class Meta:
         verbose_name = "Locataire"
 
@@ -73,12 +90,25 @@ class Tenant(models.Model):
     first_name = models.CharField(max_length=255, verbose_name="Prénom")
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, verbose_name="Sexe")
     school = models.ForeignKey('School', on_delete=models.PROTECT, verbose_name="Ecole")
-    school_year = models.PositiveIntegerField(default=1, verbose_name="Année d'étude", blank=True, null=True)
+    school_year = models.PositiveIntegerField(
+        default=1,
+        verbose_name="Année d'étude",
+        blank=True,
+        null=True
+    )
     date_of_entry = models.DateField(verbose_name="Date d'entrée à la rez", blank=True, null=True)
-    date_of_departure = models.DateField(blank=True, verbose_name="Date de sortie de la rez", null=True)
+    date_of_departure = models.DateField(
+        blank=True,
+        verbose_name="Date de sortie de la rez",
+        null=True
+    )
     observations = models.TextField(verbose_name="Observations", blank=True)
     temporary = models.BooleanField(default=False, verbose_name="Passager")
-    cellphone = models.CharField(max_length=10, verbose_name="Numéro de téléphone portable", blank=True)
+    cellphone = models.CharField(
+        max_length=10,
+        verbose_name="Numéro de téléphone portable",
+        blank=True
+    )
     leaving = models.BooleanField(default=False, verbose_name="Sur le départ")
     waterproof_undersheet = models.BooleanField(default=False, verbose_name="Alèse")
     pillow = models.BooleanField(default=False, verbose_name="Oreiller")
@@ -87,7 +117,11 @@ class Tenant(models.Model):
     sheet = models.BooleanField(default=False, verbose_name="Drap")
     birthday = models.DateField(verbose_name="Date de naissance", blank=True, null=True)
     birthcity = models.CharField(max_length=255, verbose_name="Ville de naissance", blank=True)
-    birthdepartement = models.CharField(max_length=255, verbose_name="Département de naissance", blank=True)
+    birthdepartement = models.CharField(
+        max_length=255,
+        verbose_name="Département de naissance",
+        blank=True
+    )
     birthcountry = models.CharField(max_length=255, verbose_name="Pays de naissance", blank=True)
     street_number = models.PositiveIntegerField(verbose_name="N° de rue", blank=True, null=True)
     street = models.CharField(max_length=255, verbose_name="Rue", blank=True)
@@ -96,13 +130,27 @@ class Tenant(models.Model):
     country = models.CharField(max_length=255, verbose_name="Pays", blank=True)
     email = models.EmailField(verbose_name="Email", blank=True)
     phone = models.CharField(max_length=10, verbose_name="Téléphone fixe", blank=True)
-    current_leasing = models.ForeignKey('Leasing', on_delete=models.PROTECT, verbose_name="Dossier actuel", blank=True, null=True, related_name="current_tenants")
-    next_leasing = models.ForeignKey('Leasing', on_delete=models.PROTECT, verbose_name="Dossier suivant", blank=True, null=True, related_name="next_tenants")
+    current_leasing = models.ForeignKey(
+        'Leasing',
+        on_delete=models.PROTECT,
+        verbose_name="Dossier actuel",
+        blank=True,
+        null=True,
+        related_name="current_tenants"
+    )
+    next_leasing = models.ForeignKey(
+        'Leasing',
+        on_delete=models.PROTECT,
+        verbose_name="Dossier suivant",
+        blank=True,
+        null=True,
+        related_name="next_tenant"
+    )
 
     objects = TenantManager()
 
     def __str__(self):
-        if(self.gender == "M"):
+        if self.gender == "M":
             pre = "M."
         else:
             pre = "Mme."
@@ -110,20 +158,21 @@ class Tenant(models.Model):
 
     @property
     def room(self):
+        """Return current room (if exists)."""
         if self.current_leasing:
             return self.current_leasing.room
-        else:
-            return None
+        return None
 
     @property
     def next_room(self):
+        """Return next room (if exists)."""
         if self.next_leasing:
             return self.next_leasing.room
-        else:
-            return None
+        return None
 
     @property
     def previous_leasings(self):
+        """Return all leasings of the tenant, except for current and next (if they exist)."""
         leasings = Leasing.objects.filter(tenant=self)
         if self.current_leasing:
             leasings = leasings.exclude(pk=self.current_leasing.pk)
@@ -133,57 +182,88 @@ class Tenant(models.Model):
 
     @property
     def previous_rooms(self):
+        """Return all roomss of the tenant, excpet for current and next (if they exist)."""
         pks = [leasing.room.pk for leasing in self.previous_leasings]
         return Room.objects.filter(pk__in=pks)
 
     @property
     def civil_status_completed(self):
+        """Return true if name, first_name, gender and school are completed."""
         return self.name and self.first_name and self.gender and self.school
 
     @property
     def birth_completed(self):
+        """Return true if all birth information is completed."""
         return self.birthday and self.birthcity and self.birthdepartement and self.birthcountry
-    
+
     @property
     def address_completed(self):
+        """Return true if all current address information is completed."""
         return self.street_number and self.street and self.city and self.country
 
     @property
     def phone_mail_completed(self):
+        """Return true if email, phone and cellphone are completed."""
         return self.email and self.cellphone and self.phone
 
     @property
     def completed(self):
-        return self.civil_status_completed and self.birth_completed and self.address_completed and self.phone_mail_completed
+        """Return true if civil_status, birth information,
+        address information and contact information are completed."""
+        return (self.civil_status_completed and self.birth_completed
+                and self.address_completed and self.phone_mail_completed)
 
 class Room(models.Model):
+    """Store a room."""
     class Meta:
         verbose_name = "Chambre"
 
     lot = models.PositiveIntegerField(verbose_name="Lot")
     room = models.CharField(max_length=6, verbose_name="Chambre")
     rentType = models.ForeignKey('Rent', on_delete=models.PROTECT, verbose_name="Loyer")
-    renovation = models.ForeignKey('Renovation', on_delete=models.PROTECT, verbose_name="Niveau de rénovation", blank=True, null=True)
+    renovation = models.ForeignKey(
+        'Renovation',
+        on_delete=models.PROTECT,
+        verbose_name="Niveau de rénovation",
+        blank=True,
+        null=True
+    )
     observations = models.TextField(verbose_name="Observations", blank=True)
     map = models.ImageField(verbose_name="Plan", blank=True, null=True)
-    current_leasing = models.ForeignKey('Leasing', on_delete=models.PROTECT, verbose_name="Dossier actuel", blank=True, null=True, related_name="current_rooms")
-    next_leasing = models.ForeignKey('Leasing', on_delete=models.PROTECT, verbose_name="Dossier suivant", blank=True, null=True, related_name="next_rooms")
+    current_leasing = models.ForeignKey(
+        'Leasing',
+        on_delete=models.PROTECT,
+        verbose_name="Dossier actuel",
+        blank=True,
+        null=True,
+        related_name="current_rooms"
+    )
+    next_leasing = models.ForeignKey(
+        'Leasing',
+        on_delete=models.PROTECT,
+        verbose_name="Dossier suivant",
+        blank=True,
+        null=True,
+        related_name="next_rooms"
+    )
 
     def __str__(self):
         return self.room
 
     def building(self):
+        """Return building of the room i.e. the first char of room."""
         return self.room[0]
 
     @property
     def current_tenant(self):
+        """Return current tenant (if exists)."""
         if self.current_leasing:
             return self.current_leasing.tenant
-        else:
-            return None
+        return None
 
     @property
     def next_tenant(self):
+        """Return next tenant (if exists)."""
         if self.next_leasing:
             return self.next_leasing.tenant
         else:
@@ -191,6 +271,7 @@ class Room(models.Model):
 
     @property
     def previous_leasings(self):
+        """Return all leasings of the room, except for current and next (if they exist)."""
         leasings = Leasing.objects.filter(room=self)
         if self.current_leasing:
             leasings = leasings.exclude(pk=self.current_leasing.pk)
@@ -200,13 +281,15 @@ class Room(models.Model):
 
     @property
     def previous_tenants(self):
+        """Return all tenants of the room, except for current and next (if they exist)."""
         pks = [leasing.tenant.pk for leasing in self.previous_leasings]
         return Tenant.objects.filter(pk__in=pks)
 
 
 class Leasing(models.Model):
+    """Store a leasing."""
     class Meta:
-        verbose_name="Location"
+        verbose_name = "Location"
 
     PAYMENT_CHOICES = (
         ('direct_debit', 'Prélèvement'),
@@ -217,46 +300,71 @@ class Leasing(models.Model):
     )
     tenant = models.ForeignKey('Tenant', on_delete=models.PROTECT, verbose_name="Locataire")
     room = models.ForeignKey('Room', on_delete=models.PROTECT, verbose_name="Chambre")
-    bail = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Caution", blank=True, null=True)
+    bail = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        verbose_name="Caution",
+        blank=True,
+        null=True
+    )
     apl = models.DateField(verbose_name="APL", blank=True, null=True)
-    payment = models.CharField(max_length=255, verbose_name="Paiement", choices=PAYMENT_CHOICES, blank=True)
+    payment = models.CharField(
+        max_length=255,
+        verbose_name="Paiement",
+        choices=PAYMENT_CHOICES,
+        blank=True
+    )
     rib = models.BooleanField(default=False, verbose_name="RIB")
-    insuranceDeadline = models.DateField(verbose_name="Date de fin d'assurance", blank=True, null=True)
+    insuranceDeadline = models.DateField(
+        verbose_name="Date de fin d'assurance",
+        blank=True,
+        null=True
+    )
     contractSigned = models.BooleanField(default=False, verbose_name="Contrat signé")
     contractDate = models.DateField(verbose_name="Date du contrat", blank=True, null=True)
     cautionRib = models.BooleanField(default=False, verbose_name="RIB caution")
     idgarant = models.BooleanField(default=False, verbose_name="Pièce d'identité du garant")
-    payinslip = models.BooleanField(default=False, verbose_name="3 dernier bulletins de salaire du garant")
+    payinslip = models.BooleanField(
+        default=False,
+        verbose_name="3 dernier bulletins de salaire du garant"
+    )
     tax_notice = models.BooleanField(default=False, verbose_name="Avis d'imposition du garant")
     stranger = models.BooleanField(default=False, verbose_name="Locataire étranger")
     caf = models.CharField(max_length=255, verbose_name="CAF", blank=True)
-    residence_certificate = models.BooleanField(default=False, verbose_name="Certificat de domicile")
-    check_guarantee = models.BooleanField(default=False, verbose_name="Chèque pour le complément de dépot de garantie")
+    residence_certificate = models.BooleanField(
+        default=False,
+        verbose_name="Certificat de domicile"
+    )
+    check_guarantee = models.BooleanField(
+        default=False,
+        verbose_name="Chèque pour le complément de dépot de garantie"
+    )
     guarantee = models.BooleanField(default=False, verbose_name="Engagement de caution")
     photo = models.BooleanField(default=False, verbose_name="Photo d'identité")
-    internal_rules_signed = models.BooleanField(default=False, verbose_name="Règlement intérieur signé")
+    internal_rules_signed = models.BooleanField(
+        default=False,
+        verbose_name="Règlement intérieur signé"
+    )
     school_certificate = models.BooleanField(default=False, verbose_name="Certificat de scolarité")
-    debit_authorization = models.BooleanField(default=False, verbose_name="Autorisation de prélèvement")
+    debit_authorization = models.BooleanField(
+        default=False,
+        verbose_name="Autorisation de prélèvement"
+    )
     issue = models.BooleanField(default=False, verbose_name="Problème")
     missing_documents = models.TextField(verbose_name="Documents manquants", blank=True)
     date_of_entry = models.DateField(verbose_name="Date d'entrée", blank=True, null=True)
     date_of_departure = models.DateField(verbose_name="Date de sortie", blank=True, null=True)
-    
 
     def __str__(self):
-        if(self.date_of_entry):
-            a = str(self.date_of_entry)
-        else:
-            a = "?"
-        if(self.date_of_departure):
-            b = str(self.date_of_departure)
-        else:
-            b = "?"
-        return str(self.tenant) + " dans " + str(self.room) + " (" + a + " - " + b + ")"
+        return str(self.tenant) + \
+        " dans " + str(self.room) + \
+        " (" + str(self.date_of_entry or "") + \
+        " - " + str(self.date_of_departure or "") + ")"
 
 class Map(models.Model):
+    """Store a general map."""
     class Meta:
-        verbose_name="Plan"
+        verbose_name = "Plan"
     name = models.CharField(max_length=255, verbose_name="Nom")
     map = models.ImageField(verbose_name="Plan")
 
