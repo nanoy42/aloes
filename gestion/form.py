@@ -1,5 +1,6 @@
 """Forms of gestion app."""
 from dal import autocomplete
+import json
 from django import forms
 
 from aloes.widgets import DatePicker
@@ -86,6 +87,7 @@ class SearchForm(forms.Form):
 
 class CreateTenantForm(forms.ModelForm):
     """A form to create a tenant"""
+    required_css_class = 'required'
     class Meta:
         model = Tenant
         fields = [
@@ -105,6 +107,7 @@ class CreateTenantForm(forms.ModelForm):
             'street_number',
             'street',
             'zipcode',
+            'city',
             'country',
             'email',
             'phone'
@@ -135,6 +138,7 @@ class TenantForm(forms.ModelForm):
             'street_number',
             'street',
             'zipcode',
+            'city', 
             'country',
             'email',
             'phone',
@@ -160,7 +164,7 @@ class RoomForm(forms.ModelForm):
         fields = [
             'lot',
             'room',
-            'rentType',
+            'rent_type',
             'renovation',
             'observations',
             'map',
@@ -176,9 +180,9 @@ class LeasingForm(forms.ModelForm):
             "payment",
             "rib",
             "insuranceDeadline",
-            "contractSigned",
-            "contractDate",
-            "cautionRib",
+            "contract_signed",
+            "contract_date",
+            "caution_rib",
             "idgarant",
             "payinslip",
             "tax_notice",
@@ -190,12 +194,16 @@ class LeasingForm(forms.ModelForm):
             "issue",
             "missing_documents",
             "date_of_entry",
-            "date_of_departure"
+            "date_of_departure",
+            "photo",
+            "internal_rules_signed",
+            "school_certificate",
+            "debit_authorization",
         ]
         widgets = {
             'date_of_entry': DatePicker(),
             'date_of_departure': DatePicker(),
-            'contractDate': DatePicker(),
+            'contract_date': DatePicker(),
             'insuranceDeadline': DatePicker(),
             'apl': DatePicker(),
         }
@@ -216,7 +224,7 @@ class DateForm(forms.Form):
 class SelectTenantWNRForm(forms.Form):
     """Select a tenant without next room with autocomplete."""
     tenant = forms.ModelChoiceField(
-        queryset=Tenant.objects.has_no_next_room(),
+        queryset=Tenant.objects.all(),
         required=True,
         label="Locataire",
         widget=autocomplete.ModelSelect2(url='gestion:tenantWNRAutocomplete')
@@ -225,7 +233,7 @@ class SelectTenantWNRForm(forms.Form):
 class SelectRoomWNTForm(forms.Form):
     """Select a room without next tenant with autocomplete."""
     room = forms.ModelChoiceField(
-        queryset=Room.objects.filter(next_leasing=None),
+        queryset=Room.objects.all(),
         required=True,
         label="Chambre",
         widget=autocomplete.ModelSelect2(url='gestion:noNextTenantRoomAutocomplete')
@@ -234,7 +242,7 @@ class SelectRoomWNTForm(forms.Form):
 class TenantMoveInDirectForm(forms.Form):
     """Select an empty room for tenant to move in."""
     room = forms.ModelChoiceField(
-        queryset=Room.objects.filter(current_leasing=None),
+        queryset=Room.objects.all(),
         required=True,
         label="Chambre",
         widget=autocomplete.ModelSelect2(url='gestion:emptyRoomAutocomplete')
@@ -244,9 +252,23 @@ class TenantMoveInDirectForm(forms.Form):
 class RoomMoveInDirectForm(forms.Form):
     """Select a tenant withj no room to move in."""
     tenant = forms.ModelChoiceField(
-        queryset=Tenant.objects.has_no_room(),
+        queryset=Tenant.objects.all(),
         required=True,
         label="Locataire",
         widget=autocomplete.ModelSelect2(url='gestion:tenantWithoutRoomAutocomplete')
     )
     date = forms.DateField(widget=DatePicker(), required=True)
+
+class ImportTenantForm(forms.Form):
+    """Load json data to create a tenant."""
+    jsonfield = forms.CharField(max_length=32768)
+
+    def clean_jsonfield(self):
+        """Clean field"""
+        jdata = self.cleaned_data['jsonfield']
+        try:
+            json_data = json.loads(jdata)
+            return json_data
+        except:
+           raise forms.ValidationError("Invalid data in jsonfield")
+            

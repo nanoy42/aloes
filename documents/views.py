@@ -54,6 +54,13 @@ class DocumentEdit(AdminRequiredMixin, LockableUpdateView): # pylint: disable=to
         "file": True
     }
 
+    def form_valid(self, form):
+        if self.get_object().document:
+            os.remove(self.get_object().document.path)
+        if self.get_object().english_document:
+            os.remove(self.get_object().english_document.path)
+        return super().form_valid(form)
+
 class DocumentDelete(AdminRequiredMixin, ImprovedDeleteView): # pylint: disable=too-many-ancestors
     """Class based view to delete a document."""
     model = Document
@@ -69,7 +76,10 @@ class DocumentDelete(AdminRequiredMixin, ImprovedDeleteView): # pylint: disable=
     }
 
     def delete(self, request, *args, **kwargs):
-        os.remove(self.get_object().document.path)
+        if self.get_object().document:
+            os.remove(self.get_object().document.path)
+        if self.get_object().english_document:
+            os.remove(self.get_object().english_document.path)
         return super().delete(request, *args, **kwargs)
 
 @admin_required

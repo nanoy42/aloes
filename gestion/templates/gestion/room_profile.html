@@ -1,27 +1,31 @@
 {% extends 'base.html' %}
 {% load bootstrap4 %}
 {% block content%}
-<h3>{{room}} (Lot {{room.lot}}) <span class="badge" style="color:white;background-color:{{room.renovation.color}}">{{room.renovation.name}}</span>
+<h3>{{room}} (Lot {{room.lot}}) <span class="badge" style="color:white;background-color:{{room.renovation.color}}">{{room.renovation.name}}</span> {% if not room.is_active %}<span class="text-danger">Attention : cette chambre n'est pas active</span>{% endif %}
 </h3>
 <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-	<a href="{% url 'gestion:editRoom' room.pk %}" class="btn btn-primary">Modifier</a>
+	<a href="{% url 'gestion:editRoom' room.pk %}" class="btn btn-primary"><i class="fa fa-pencil-alt"></i> Modifier</a>
 	{% if room.map %}
-	<a href="{{room.map.url}}" target="_blank" class="btn btn-primary">Plan</a>
+	<a href="{{room.map.url}}" target="_blank" class="btn btn-primary"><i class="fa fa-map"></i> Plan</a>
 	{% endif %}
 	<div class="btn-group" role="group">
 		<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			Actions
+			<i class="fa fa-cogs"></i> Actions
 		</button>
 		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-			{% if room.current_leasing %}<a class="dropdown-item" href="{% url 'gestion:moveOut' 'room' room.current_leasing.tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Vider la chambre</a>{% endif %}
+			{% if room.current_leasing %}
+			<a class="dropdown-item" href="{% url 'gestion:moveOut' 'room' room.current_leasing.tenant.pk %}"><i class="fa fa-sign-out-alt"></i> Vider la chambre</a>
+			{% else %}
+			<a class="dropdown-item" href="{% url 'gestion:roomMoveInDirect' room.pk %}"><i class="fa fa-sign-in-alt"></i> Emménager un locataire</a>
+			{% endif %}
 			{% if room.next_leasing %}
 			<a class="dropdown-item" href="{% url 'gestion:moveIn' 'room' room.next_leasing.tenant.pk %}"><i class="fa fa-sign-in-alt"></i> Emménager le prochain locataire</a>
 			<a class="dropdown-item" href="{% url 'gestion:cancelNextRoom' 'room' room.next_leasing.tenant.pk %}"><i class="fa fa-times"></i> Annuler le prochain locataire</a>
-			{% endif %}
-			{% if room.current_leasing or room.next_leasing %}
-			<div class="dropdown-divider"></div>
+			{% else %}
+			<a class="dropdown-item" href="{% url 'gestion:addNextTenant' room.pk %}"><i class="fa fa-user-plus"></i> Prévoir un prochain locataire</a>
 			{% endif %}
 			<a class="dropdown-item" href="{% url 'gestion:changeRoomMap' room.pk %}"><i class="fa fa-map"></i> Changer le plan</a>
+			<a class="dropdown-item" href="{% url 'gestion:roomSwitchActivate' room.pk %}"><i class="fa fa-screwdriver"></i> {{room.is_active|yesno:"Désa,A"}}ctiver la chambre</a>
 		</div>
 	</div>
 </div>
@@ -50,9 +54,9 @@
 			</div>
 			<div class="col">
 				<div class="form-group">
-					<label for="id_rentType">Loyer</label>
-					<select name="rentType" class="form-control" title="" required id="id_rentType" disabled>
-						<option value="{{room.rentType.id}}" selected>{{room.rentType}}</option>
+					<label for="id_rent_type">Loyer</label>
+					<select name="rent_type" class="form-control" title="" required id="id_rent_type" disabled>
+						<option value="{{room.rent_type.id}}" selected>{{room.rent_type}}</option>
 					</select>
 				</div>
 			</div>

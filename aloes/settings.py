@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import os
 
 from django.contrib import messages
+from .local_settings import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,14 +21,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '$5j$zb)ok8ao$+8-8c_wbi*ieq(&+g0vaq3c@b#(tow_r%o__y'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -82,21 +75,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'aloes.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'aloes',
-        'USER': 'aloes',
-        'PASSWORD': 'plopiplop',
-        'HOST': 'localhost',
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
@@ -121,7 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'fr-fr'
 
-TIME_ZONE = 'Europe/Paris'
+
 
 USE_I18N = True
 
@@ -133,14 +111,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
-STATIC_URL = '/static/'
 STATIC_ROOT = 'static_files'
 STATICFILES_DIRS = (
         os.path.join(BASE_DIR, 'static'),
 )
 
 MEDIA_ROOT = 'media_files/'
-MEDIA_URL = '/media/'
 
 MESSAGE_TAGS = {
         messages.ERROR: 'danger'
@@ -148,9 +124,8 @@ MESSAGE_TAGS = {
 
 LOGIN_URL = '/login'
 
-DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-DBBACKUP_STORAGE_OPTIONS = {'location': '/var/backups/test/'}
-
 LOCK_TOKENS = {
     'TIMEOUT': 300,
 }
+
+INTERNAL_IPS = ['127.0.0.1']

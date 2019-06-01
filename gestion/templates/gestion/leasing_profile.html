@@ -3,18 +3,18 @@
 {% block content%}
 <h3>{{leasing}}</h3>
 <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-	<a href="{% url 'gestion:editLeasing' leasing.pk %}" type="submit" class="btn btn-primary">Modifier</a>
+	<a href="{% url 'gestion:editLeasing' leasing.pk %}" type="submit" class="btn btn-primary"><i class="fa fa-pencil-alt"></i> Modifier</a>
 	<div class="btn-group" role="group">
 		<button id="btnGroupDrop1" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			Documents
+			<i class="fa fa-file-alt"></i> Documents
 		</button>
 		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-			<a class="dropdown-item{% if not leasing.date_of_entry %} tooltip2{% endif %}" href="{% url 'generate_docs:aplInfos' leasing.pk %}"{% if not leasing.date_of_entry %} title="Pas de date d'entrée pour le dossier"{% endif %}>APL infos{% if not leasing.date_of_entry %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
-			<a class="dropdown-item{% if not tenant.birth_completed or not leasing.date_of_entry %} tooltip2{% endif %}" href="{% url 'generate_docs:rentContract' leasing.pk %}" {% if not tenant.birth_completed or not leasing.date_of_entry %}title="{% if not tenant.birth_completed %}Il pourrait manquer des informations au locataire{% endif %}{% if not tenant.birth_completed and not leasing.date_of_entry %};{% endif %}{% if not leasing.date_of_entry %}Pas de date d'entrée{% endif %}"{% endif %}>Contrat de location{% if not tenant.birth_completed or not leasing.date_of_entry %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
-			<a class="dropdown-item{% if not leasing.tenant.completed %} tooltip2{% endif %}" href="{% url 'generate_docs:civilStatus' leasing.pk %}" {% if not leasing.tenant.completed %} title="Il pourrait manquer des informations au locataire"{% endif %}>État civil {% if not leasing.tenant.completed %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
-			<a class="dropdown-item{% if not leasing.contractDate %} tooltip2{% endif %}" href="{% url 'generate_docs:guarantee' leasing.pk %}" {% if not leasing.contractDate %}title="Aucune date de contrat"{% endif %}>Engagement de caution{% if not leasing.contractDate %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
-			<a class="dropdown-item" href="{% url 'generate_docs:insuranceExpiration' leasing.pk %}">Expiration assurance</a>
-			<a class="dropdown-item" href="{% url 'generate_docs:tenantRecord' leasing.pk %}">Fiche locataire</a> 
+			<a class="dropdown-item{% if not leasing.date_of_entry %} tooltip2{% endif %}" href="{% url 'generate_docs:aplInfos' leasing.pk %}"{% if not leasing.date_of_entry %} title="Pas de date d'entrée pour le dossier"{% endif %}><i class="fa fa-info-circle"></i> APL infos{% if not leasing.date_of_entry %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
+			<a class="dropdown-item{% if not tenant.birth_completed or not leasing.date_of_entry %} tooltip2{% endif %}" href="{% url 'generate_docs:rentContract' leasing.pk %}" {% if not tenant.birth_completed or not leasing.date_of_entry %}title="{% if not tenant.birth_completed %}Il pourrait manquer des informations au locataire{% endif %}{% if not tenant.birth_completed and not leasing.date_of_entry %};{% endif %}{% if not leasing.date_of_entry %}Pas de date d'entrée{% endif %}"{% endif %}><i class="fa fa-file-contract"></i> Contrat de location{% if not tenant.birth_completed or not leasing.date_of_entry %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
+			<a class="dropdown-item{% if not leasing.tenant.completed %} tooltip2{% endif %}" href="{% url 'generate_docs:civilStatus' leasing.pk %}" {% if not leasing.tenant.completed %} title="Il pourrait manquer des informations au locataire"{% endif %}><i class="fa fa-address-card"></i> État civil {% if not leasing.tenant.completed %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
+			<a class="dropdown-item{% if not leasing.contract_date %} tooltip2{% endif %}" href="{% url 'generate_docs:guarantee' leasing.pk %}" {% if not leasing.contract_date %}title="Aucune date de contrat"{% endif %}><i class="fa fa-money-check-alt"></i> Engagement de caution{% if not leasing.contract_date %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
+			<a class="dropdown-item" href="{% url 'generate_docs:insuranceExpiration' leasing.pk %}"><i class="fa fa-clock"></i> Expiration assurance</a>
+			<a class="dropdown-item" href="{% url 'generate_docs:tenantRecord' leasing.pk %}"><i class="fa fa-id-card"></i> Fiche locataire</a> 
 		</div>
 	</div>
 </div>
@@ -39,16 +39,16 @@
 <h4>Dossier</h4>
 <div class="row">
 	<div class="col">
-		<div class="form-group"><div class="checkbox"><label for="id_contractSigned"><input type="checkbox" name="contractSigned" class="" id="id_contractSigned" {% if leasing.contractSigned %}checked{% endif %} disabled/> Contrat signé</label></div></div>
+		<div class="form-group"><div class="checkbox"><label for="id_contract_signed"><input type="checkbox" name="contract_signed" class="" id="id_contract_signed" {% if leasing.contract_signed %}checked{% endif %} disabled/> Contrat signé</label></div></div>
 	</div>
 	<div class="col">
-		<div class="form-group"><label for="id_contractDate">Date du contrat</label><input type="text" name="contractDate" value="{{leasing.contractDate}}" class="form-control" placeholder="Date du contrat" title="" id="id_contractDate" disabled/></div>
+		<div class="form-group"><label for="id_contract_date">Date du contrat</label><input type="text" name="contract_date" value="{{leasing.contract_date}}" class="form-control" placeholder="Date du contrat" title="" id="id_contract_date" disabled/></div>
 	</div>
 </div>
 <h5>Garant</h5>
 <div class="row">
 	<div class="col">
-		<div class="form-group"><div class="checkbox"><label for="id_cautionRib"><input type="checkbox" name="cautionRib" class="" id="id_cautionRib" {% if leasing.cautionRib %}checked{% endif %} disabled/> RIB caution</label></div></div>
+		<div class="form-group"><div class="checkbox"><label for="id_caution_rib"><input type="checkbox" name="caution_rib" class="" id="id_caution_rib" {% if leasing.caution_rib %}checked{% endif %} disabled/> RIB caution</label></div></div>
 	</div>
 	<div class="col">
 		<div class="form-group"><div class="checkbox"><label for="id_idgarant"><input type="checkbox" name="idgarant" class="" id="id_idgarant" {% if leasing.idgarant %}checked{% endif %} disabled/> Pièce d'identité du garant</label></div></div>
@@ -99,7 +99,7 @@
 		<div class="form-group">
 			<label for="id_payment">Paiement</label>
 			<select name="payment" class="form-control" title="" id="id_payment" disabled>
-				<option value="" selected>{{leasing.payment}}</option>
+				<option value="" selected>{{leasing.get_payment_display}}</option>
 			</select>
 		</div>
 	</div>
@@ -110,6 +110,20 @@
 <div class="row">
 	<div class="col">
 		<div class="form-group"><div class="checkbox"><label for="id_issue"><input type="checkbox" name="issue" class="" id="id_issue" {% if leasing.issue %}checked{% endif %} disabled/> Problème</label></div></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_photo"><input type="checkbox" name="photo" class="" id="id_photo" {% if leasing.photo %}checked{% endif %} disabled/> Photo d'identité</label></div></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_internal_rules_signed"><input type="checkbox" name="internal_rules_signed" class="" id="id_internal_rules_signed" {% if leasing.internal_rules_signed %}checked{% endif %} disabled/> Règlement intérieur signé</label></div></div>
+	</div>
+</div>
+<div class="row">
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_school_certificate"><input type="checkbox" name="school_certificate" class="" id="id_school_certificate" {% if leasing.school_certificate %}checked{% endif %} disabled/> Certificat de scolarité</label></div></div>
+	</div>
+	<div class="col">
+		<div class="form-group"><div class="checkbox"><label for="id_debit_authorization"><input type="checkbox" name="debit_authorization" class="" id="id_debit_authorization" {% if leasing.debit_authorization %}checked{% endif %} disabled/> Autorisation de prélèvement</label></div></div>
 	</div>
 </div>
 <div class="row">

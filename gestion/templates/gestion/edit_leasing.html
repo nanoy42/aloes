@@ -28,16 +28,16 @@
 	<h4>Dossier</h4>
 	<div class="row">
 		<div class="col">
-			{% bootstrap_field leasingForm.contractSigned %}
+			{% bootstrap_field leasingForm.contract_signed %}
 		</div>
 		<div class="col">
-			{% bootstrap_field leasingForm.contractDate %}
+			{% bootstrap_field leasingForm.contract_date %}
 		</div>
 	</div>
 	<h5>Garant</h5>
 	<div class="row">
 		<div class="col">
-			{% bootstrap_field leasingForm.cautionRib %}
+			{% bootstrap_field leasingForm.caution_rib %}
 		</div>
 		<div class="col">
 			{% bootstrap_field leasingForm.idgarant %}
@@ -94,6 +94,20 @@
 	<div class="row">
 		<div class="col">
 			{% bootstrap_field leasingForm.issue %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.photo %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.internal_rules_signed %}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			{% bootstrap_field leasingForm.school_certificate %}
+		</div>
+		<div class="col">
+			{% bootstrap_field leasingForm.debit_authorization %}
 		</div>
 	</div>
 	<div class="row">

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h2>Chambres inactives</h2>
+<div class="responsive-table">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Chambre</th>
+				<th>Locataire actuel ou prévu ?</th>
+			</tr>
+		</thead>
+		<tbdoy>
+		{% for room in rooms %}
+		<tr>
+			<td><a href="{% url 'gestion:roomProfile' room.pk %}">{{room}}</a></td>
+			<td>{% if room.current_leasing or room.next_leasing %}Oui{% else %}Non{% endif %}</td>
+		</tr>
+		{% endfor %}
+		</tbdoy>
+	</table>
+</div>
+{% endblock %}

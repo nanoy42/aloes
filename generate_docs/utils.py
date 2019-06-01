@@ -10,7 +10,7 @@ def format_date(value):
     """Filter to display date correctly."""
     try:
         return value.strftime('%d/%m/%Y')
-    except ValueError:
+    except ValueError:  
         return ""
 
 def format_datetime(value):

@@ -37,5 +37,8 @@ urlpatterns = [
     path('deleleUser/<int:pk>', views.UserDelete.as_view(), name="deleteUser"),
     path('resetPassword/<int:pk>', views.reset_password, name="resetPassword"),
     path('adminRights/<int:pk>', views.admin_rights, name="adminRights"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + \
-static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

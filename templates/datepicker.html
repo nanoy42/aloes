@@ -1,7 +1,7 @@
 <input {{attrs}} name="{{name}}" type="text" class="form-control" placeholder="Date" value="{% if value %}{{value | date:"d/m/Y"}}{% endif %}"/>
 <script>
 	$(document).ready(function(){
-		$("#{{id}}").datepicker();
+		$("#{{id}}").datepicker({yearRange:"c-30:c+10"});
 	});
 </script>
 

@@ -144,7 +144,7 @@ class UserCreate(SuperuserRequiredMixin, ImprovedCreateView): # pylint: disable=
 
     def form_valid(self, form):
         instance = form.save()
-        instance.set_password(self.object.username)
+        instance.set_password(instance.username)
         instance.is_staff = True
         instance.save()
         messages.success(self.request, self.success_message)
@@ -194,5 +194,5 @@ def admin_rights(request, pk):
     user = get_object_or_404(User, pk=pk)
     user.is_superuser = True
     user.save()
-    messages.success(request, "L'utilisateur vient de récuperer les droits administrateurs")
+    messages.success(request, "L'utilisateur vient de récupérer les droits administrateurs")
     return redirect(reverse('indexAccounts'))

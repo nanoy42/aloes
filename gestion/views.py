@@ -1,5 +1,6 @@
 """Views of gestion app.""" # pylint: disable=too-many-lines
 import csv
+import os
 
 from dal import autocomplete
 from django.contrib import messages
@@ -20,8 +21,11 @@ from aloes.utils import (ImprovedCreateView, ImprovedDeleteView,
 from .form import (CreateTenantForm, DateForm, LeasingForm,
                    LeaveForm, RoomForm, SearchForm, TenantForm,
                    RoomMoveInDirectForm, SelectRoomWNTForm,
-                   SelectTenantWNRForm, TenantMoveInDirectForm)
+                   SelectTenantWNRForm, TenantMoveInDirectForm,
+                   ImportTenantForm)
 from .models import Leasing, Map, Renovation, Rent, Room, School, Tenant
+
+from django.db import connection
 
 
 @admin_required
@@ -29,7 +33,7 @@ def gestion_index(request):  # pylint : disable=too-many-branches
     """Main page of gestion app."""
     search_form = SearchForm(request.GET or None)
     if search_form.is_valid():
-        res = Room.objects
+        res = Room.objects.select_related('current_leasing').select_related('next_leasing').select_related('renovation').select_related('rent_type')
         if search_form.cleaned_data['last_name']:
             res = res.filter(
                 current_leasing__tenant__name__icontains=\
@@ -41,7 +45,7 @@ def gestion_index(request):  # pylint : disable=too-many-branches
         if search_form.cleaned_data['name']:
             res = res.filter(Q(current_leasing__tenant__name__icontains=\
                 search_form.cleaned_data['name']) | Q(
-                    curent_leasing__tenant__first_name__icontains=search_form.cleaned_data['name']))
+                    current_leasing__tenant__first_name__icontains=search_form.cleaned_data['name']))
         if search_form.cleaned_data['room']:
             res = res.filter(
                 room__istartswith=search_form.cleaned_data['room'])
@@ -72,7 +76,7 @@ def gestion_index(request):  # pylint : disable=too-many-branches
             if search_form.cleaned_data['sort'] == "last_name":
                 res = res.order_by("current_leasing__tenant__name")
     else:
-        res = Room.objects.all()
+        res = Room.objects.filter(is_active=True).select_related('current_leasing').select_related('next_leasing').select_related('renovation').select_related('rent_type')
     return render(
         request,
         "gestion/gestion_index.html",
@@ -466,10 +470,38 @@ class ChangeRoomMap(AdminRequiredMixin, LockableUpdateView):
         "form_title": "Modification d'un plan",
         "form_icon": "pencil-alt",
         "form_button": "Modifier",
-        "active": "rooms"}
+        "active": "rooms",
+        "file": True
+    }
+
+    def form_valid(self, form):
+        if self.get_object().map:
+            os.remove(self.get_object().map.path)
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse("gestion:roomProfile", kwargs={'pk': self.object.pk})
+
+def room_switch_activate(request, pk):
+    """Invert the active status of a room"""
+    room = get_object_or_404(Room, pk=pk)
+    room.is_active = 1 - room.is_active
+    room.save()
+    messages.success(request, "Le statut a bien été changé.")
+    return redirect(reverse('gestion:roomProfile', kwargs={'pk': pk}))
+
+
+@admin_required
+def inactive_rooms(request):
+    """Display inactive rooms."""
+    rooms = Room.objects.filter(is_active=False)
+    return render(
+        request,
+        "gestion/inactive_rooms.html",
+        {
+            "rooms": rooms
+        }
+    )
 
 ########## Tenants ##########
 
@@ -552,6 +584,42 @@ class TenantCreate(AdminRequiredMixin, ImprovedCreateView): # pylint: disable=to
     def get_success_url(self):
         return reverse("gestion:tenantProfile", kwargs={'pk': self.object.pk})
 
+def import_tenant(request):
+    """Import tenant in json format"""
+    form = ImportTenantForm(request.POST or None)
+    if form.is_valid():
+        json_data = form.cleaned_data["jsonfield"]
+        fields = json_data[0]["fields"]
+        if fields["school"]:
+            school = fields["school"]
+        else:
+            school = fields["other_school"]
+        school = School.objects.filter(name=school)
+        if school:
+            school = school[0]
+        else:
+            school = None
+        tenant = Tenant(
+            name=fields["last_name"],
+            first_name=fields["first_name"],
+            gender={"H": "M", "F": "F"}[fields["gender"]],
+            school=school,
+            school_year=1,
+            cellphone=fields["phone_number"],
+            birthday=fields["birthdate"],
+            birthcity=fields["birthplace"],
+            birthdepartement=fields["birth_departement"],
+            birthcountry=fields["birth_country"],
+            street_number=fields["street"][:fields["street"].index(" ")],
+            street=fields["street"][fields["street"].index(" ")+1:],
+            city=fields["city"],
+            zipcode=fields["zip_code"],
+            email=fields["email"]
+        )
+        tenant.save()
+        messages.success(request, "Le locataire a bien été importé. Pensez à vérifier l'école, aisni que le pays de résidence actuel.")
+        return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
+    return render(request, "form.html", {"form": form})
 
 @admin_required
 def add_next_room(request, pk):
@@ -644,7 +712,7 @@ def tenant_move_in_direct(request, pk):
 @admin_required
 def homeless_tenants(request):
     """Display tenants without room."""
-    homeless = Tenant.objects.has_no_room()
+    homeless = Tenant.objects.filter(current_leasing=None)
     return render(
         request,
         "gestion/homeless_tenants.html",
@@ -963,7 +1031,14 @@ class MapEdit(AdminRequiredMixin, LockableUpdateView):  # pylint: disable=too-ma
         "form_title": "Modification d'un plan",
         "form_icon": "pencil-alt",
         "form_button": "Modifier",
-        "active": "maps"}
+        "active": "maps",
+        "file": True,
+        }
+
+    def form_valid(self, form):
+        if self.get_object().map:
+            os.remove(self.get_object().map.path)
+        return super().form_valid(form)
 
 
 class MapDelete(AdminRequiredMixin, ImprovedDeleteView):  # pylint: disable=too-many-ancestors
@@ -979,6 +1054,11 @@ class MapDelete(AdminRequiredMixin, ImprovedDeleteView):  # pylint: disable=too-
         "delete_link": "gestion:indexMap",
         "active": "maps"
     }
+
+    def delete(self, request, *args, **kwargs):
+        if self.get_object().map:
+            os.remove(self.get_object().map.path)
+        return super().delete(request, *args, **kwargs)
 
 
 ########## Other ##########
@@ -1001,10 +1081,10 @@ def export_csv(request):
 
         writer.writerow([str(room),
                          tenant_text,
-                         str(room.next_leasing.tenant or "Pas réservée"),
+                         str(room.next_leasing.tenant if room.next_leasing else "Pas réservée"),
                          str(room.renovation or "Non indiqué"),
-                         str(room.rentType or "Non indiqué")])
-    tenants = Tenant.objects.has_no_room()
+                         str(room.rent_type or "Non indiqué")])
+    tenants = Tenant.objects.filter(current_leasing=None)
     for tenant in tenants:
         writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
     return response
@@ -1017,7 +1097,7 @@ class EmptyRoomAutocomplete(autocomplete.Select2QuerySetView):  # pylint: disabl
     def get_queryset(self):
         if not self.request.user.is_authenticated:
             return Room.object.none()
-        qs = Room.objects.filter(current_leasing=None)
+        qs = Room.objects.filter(is_active=True).filter(current_leasing=None)
         if self.q:
             qs = qs.filter(room__istartswith=self.q)
         return qs
@@ -1028,7 +1108,7 @@ class NoNextTenantRoomAutomplete(autocomplete.Select2QuerySetView):  # pylint: d
     def get_queryset(self):
         if not self.request.user.is_authenticated:
             return Room.object.none()
-        qs = Room.objects.filter(next_leasing=None)
+        qs = Room.objects.filter(is_active=True).filter(next_leasing=None)
         if self.q:
             qs = qs.filter(room__istartswith=self.q)
         return qs
@@ -1039,7 +1119,7 @@ class TenantWNRAutocomplete(autocomplete.Select2QuerySetView):  # pylint: disabl
     def get_queryset(self):
         if not self.request.user.is_authenticated:
             return Tenant.object.none()
-        qs = Tenant.objects.has_no_next_room()
+        qs = Tenant.objects.filter(next_leasing=None)
         if self.q:
             qs = qs.filter(Q(name__icontains=self.q) |
                            Q(first_name__icontains=self.q))
@@ -1051,7 +1131,7 @@ class TenantWithoutRoomAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         if not self.request.user.is_authenticated:
             return Tenant.objects.none()
-        qs = Tenant.objects.has_no_room()
+        qs = Tenant.objects.filter(current_leasing=None)
         if self.q:
             qs = qs.filter(Q(name__icontains=self.q) |
                            Q(first_name__icontains=self.q))
@@ -1061,14 +1141,21 @@ class TenantWithoutRoomAutocomplete(autocomplete.Select2QuerySetView):
 @admin_required
 def mail_tenants(request):
     """Display a link to send an email to all tenants with room."""
-    tenants_with_room = Tenant.objects.has_room()
+    tenants_with_room = Tenant.objects.exclude(email__isnull=True).prefetch_related('current_leasing__room').exclude(current_leasing__isnull=True)
+    buildings = ["A", "B", "C", "D", "E", "G"]
+    b_emails = {}
+    for building in buildings:
+        tenants_in_building =  tenants_with_room.filter(current_leasing__room__room__startswith=building)
+        b_emails[building] = [tenant.email for tenant in tenants_in_building]
     tenants_emails = [
-        tenant.email for tenant in tenants_with_room if tenant.email is not None]
+        tenant.email for tenant in tenants_with_room
+    ]
     return render(
         request,
         "gestion/mail_tenants.html",
         {
-            "tenants_emails": tenants_emails
+            "tenants_emails": tenants_emails,
+            "b_emails": b_emails,
         }
     )
 

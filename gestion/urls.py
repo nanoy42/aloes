@@ -74,4 +74,7 @@ urlpatterns = [
     path('backup', views.backup, name="backup"),
     path('mailTenants', views.mail_tenants, name="mailTenants"),
     path('homelessTenants', views.homeless_tenants, name="homelessTenants"),
+    path('roomSwitchActivate/<int:pk>', views.room_switch_activate, name="roomSwitchActivate"),
+    path('inactiveRooms', views.inactive_rooms, name="inactiveRooms"),
+    path('importTenant', views.import_tenant, name="importTenant"),
 ]

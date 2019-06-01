@@ -24,4 +24,5 @@ urlpatterns = [
         views.reservation_attestation,
         name="reservationAttestation"
     ),
+    path('mailingLabels', views.mailing_labels, name="mailingLabels")
 ]

@@ -1,13 +1,15 @@
 """Views of generate_docs app."""
 from datetime import datetime
+import csv
 
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from aloes.acl import admin_required
 from gestion.models import Leasing, Tenant
 
+from .forms import MailingLabelForm
 from .utils import ODTGenerator
 
 
@@ -41,6 +43,7 @@ def rent_contract(request, pk):
     else:
         gender = "Mme."
         born_accorded = "née"
+    floor = str(room[1]) + "ieme étage"
     if room.building == "G":
         template = ODTGenerator(
             'generate_docs/rent_contract_aloes2.odt',
@@ -56,7 +59,8 @@ def rent_contract(request, pk):
         'tenant': tenant,
         'gender': gender,
         'born_accorded': born_accorded,
-        'room': room
+        'room': room,
+        'floor': floor
     })
 
 @admin_required
@@ -69,7 +73,7 @@ def civil_status(request, pk):
     leasing = get_object_or_404(Leasing, pk=pk)
     tenant = leasing.tenant
     room = leasing.room
-    total_cheque = room.rentType.rent + room.rentType.total_rent + room.rentType.application_fee
+    total_cheque = room.rent_type.rent + room.rent_type.total_rent + room.rent_type.application_fee
     template = ODTGenerator(
         'generate_docs/civil_status.odt',
         'etat_civil' + leasing.tenant.first_name + leasing.tenant.name + '.odt'
@@ -103,8 +107,8 @@ def guarantee(request, pk):
         'leasing': leasing,
         'room': room,
         'address': address,
-        'total_rent': room.rentType.total_rent,
-        'total_rent_48': room.rentType.total_rent * 48,
+        'total_rent': room.rent_type.total_rent,
+        'total_rent_48': room.rent_type.total_rent * 48,
         'tenant': tenant
     })
 
@@ -260,3 +264,46 @@ def reservation_attestation(request, pk):
         'attestation_reservation_' + tenant.first_name + tenant.name + '.odt'
     )
     return template.render({'tenant': tenant, 'now': datetime.now(), 'user': request.user})
+
+@admin_required
+def mailing_labels(request):
+    """
+    Generates mailing labels from a csv file
+
+    Correct form of csv: 
+        first column : Name of tenant
+        second column : Room
+    """
+    form = MailingLabelForm(request.POST or None, request.FILES or None)
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        return redirect(request.POST.get('cancel') or "home")
+    if form.is_valid():
+        csv_reader = csv.reader(request.FILES['file'].read().decode("utf8").split('\n'))
+        tenant_doubles = pair(csv_reader)
+        template = ODTGenerator(
+            'generate_docs/mailing_labels.odt',
+            'etiquettes_courrier.odt'
+        )
+        return template.render({'tenant_doubles': tenant_doubles})
+    return render(request, "form.html", {
+        "form_title": "Génération des étiquettes de courrier",
+        "form_icon": "envelope",
+        "form_button": "Générer",
+        "form": form,
+        "file": True,
+    })
+
+def pair(iterator):
+    """
+    Group by two elements of the iterator
+    """
+    try:
+        while True:
+            a = next(iterator)
+            b = next(iterator, None)
+            print(a)
+            print(b)
+            yield a,b
+    except StopIteration:
+        return

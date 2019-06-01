@@ -2,5 +2,9 @@
 {% block content %}
 <h3>Envoyer un mail à tous les locataires actuels</h3>
 <br>
-Pour envoyer un mail à tous les locataires en copie cachée, cliquez <a href="mailto:aloes@centralesupelec.fr?bcc={% for email in tenants_emails %}{{email}};{% endfor %}">ici</a>. (Peut prendre plusieurs secondes avant de s'afficher)
+Pour envoyer un mail à tous les locataires en copie cachée, cliquez <a href="mailto:aloes@centralesupelec.fr?bcc={% for email in tenants_emails %}{{email}};{% endfor %}">ici</a>. (Peut prendre plusieurs secondes avant de s'afficher).<br><br>
+
+{% for b_email in b_emails %}
+Pour envoyer un mail à tous les locataires du batîment {{b_email}} : <a href="mailto:aloes@centralesupelec.fr?bcc={% for email in b_emails.b_email %}{{email}};{% endfor %}">ici</a>.<br><br>
+{% endfor %}
 {% endblock %}

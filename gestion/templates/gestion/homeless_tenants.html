@@ -14,7 +14,7 @@
 		{% for tenant in homeless %}
 		<tr>
 			<td><a href="{% url 'gestion:tenantProfile' tenant.pk %}">{{tenant}}</a></td>
-			<td>{% if tenant.has_next_room %}<a href="{% url 'gestion:roomProfile' tenant.nextRoom.pk %}">{{tenant.nextRoom}}{% else %}Pas de chambre reservée{% endif %}</a></td>
+			<td>{% if tenant.next_leasing %}<a href="{% url 'gestion:roomProfile' tenant.next_leasing.room.pk %}">{{tenant.next_leasing.room}}{% else %}Pas de chambre reservée{% endif %}</a></td>
 		</tr>
 		{% endfor %}
 		</tbdoy>
