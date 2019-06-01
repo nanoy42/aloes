@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'gestion',
     'documents',
     'aloes',
+    'generate_docs',
     'colorfield',
     'dbbackup',
     'django_cron',
