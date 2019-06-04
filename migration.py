@@ -39,6 +39,8 @@ def migrate():
         previous_leasings = data["historique"]
         renovations = []
         lht = {}
+        ignored_room = 0
+        ignored_tenant = 0
         for room in rooms:
             renovation = room["Renovation"]
             if renovation not in renovations:
@@ -197,4 +199,4 @@ def migrate():
 
 #validate_data()
 #migrate()
-reservations()
+#reservations()
