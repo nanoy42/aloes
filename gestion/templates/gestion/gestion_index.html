@@ -7,6 +7,7 @@
 			<tr>
 				<th>Chambre (lot)</th>
 				<th>Locataire</th>
+				<th>Observations</th>
 				<th>Réparation</th>
 				<th>Réservée</th>
 				<th>Loyer</th>
@@ -17,6 +18,7 @@
 		<tr>
 			<td><a href="{% url 'gestion:roomProfile' room.pk %}">{{room}} (Lot {{room.lot}})</a></td>
 			<td>{% if room.current_leasing %}<a href="{% url 'gestion:tenantProfile' room.current_leasing.tenant.pk %}">{{room.current_leasing.tenant}}{% else %}Vide{% endif %}</a></td>
+			<td>{{room.observations}}</td>
 			<td><span class="badge" style="color:white;background-color:{{room.renovation.color}}">{{room.renovation.name}}</span></td>
 			<td>{% if room.next_leasing %}<a href="{% url 'gestion:tenantProfile' room.next_leasing.tenant.pk %}">{{room.next_leasing.tenant}}</a>{% else %}Pas réservée{% endif %}</td>
 			<td>{{room.rent_type}}</td>
