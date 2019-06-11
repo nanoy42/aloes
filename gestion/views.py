@@ -46,6 +46,9 @@ def gestion_index(request):  # pylint : disable=too-many-branches
             res = res.filter(Q(current_leasing__tenant__name__icontains=\
                 search_form.cleaned_data['name']) | Q(
                     current_leasing__tenant__first_name__icontains=search_form.cleaned_data['name']))
+        if search_form.cleaned_data['observations']:
+            res = res.filter(observations__icontains=\
+                search_form.cleaned_data['observations'])
         if search_form.cleaned_data['room']:
             res = res.filter(
                 room__istartswith=search_form.cleaned_data['room'])

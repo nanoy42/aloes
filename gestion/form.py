@@ -50,6 +50,12 @@ class SearchForm(forms.Form):
         label="",
         required=False
     )
+    observations = forms.CharField(
+        max_length=255,
+        widget=forms.TextInput(attrs={'placeholder': 'Observations'}),
+        label="",
+        required=False
+    )
     building = forms.ChoiceField(choices=BUILDING_CHOICES, label="Bâtiment")
     room = forms.CharField(
         max_length=255,
