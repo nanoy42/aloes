@@ -42,6 +42,9 @@
 		</div>
 	</div>
 	{% endif %}
+	{% if tenant.current_leasing %}
+		<a href="{% url 'gestion:indexGestion' %}#room-{{tenant.current_leasing.room.pk}}" class="btn btn-primary"><i class="fa fa-share fa-flip-horizontal"></i> Retour à la liste des chambres</a>
+	{% endif %}
 </div>
 <br><br>
 {% csrf_token %}

@@ -15,7 +15,7 @@
 		</thead>
 		<tbdoy>
 		{% for room in rooms %}
-		<tr class="{{room.color_class}}">
+		<tr id="room-{{room.pk}}" class="{{room.color_class}}">
 			<td><a href="{% url 'gestion:roomProfile' room.pk %}">{{room}} (Lot {{room.lot}})</a></td>
 			<td>{% if room.current_leasing %}<a href="{% url 'gestion:tenantProfile' room.current_leasing.tenant.pk %}">{{room.current_leasing.tenant}}{% else %}Vide{% endif %}</a></td>
 			<td>{{room.observations}}</td>
