@@ -160,29 +160,29 @@ class Tenant(models.Model):
     @property
     def civil_status_completed(self):
         """Return true if name, first_name, gender and school are completed."""
-        return self.name and self.first_name and self.gender and self.school
+        return bool(self.name) and bool(self.first_name) and bool(self.gender) and bool(self.school)
 
     @property
     def birth_completed(self):
         """Return true if all birth information is completed."""
-        return self.birthday and self.birthcity and self.birthdepartement and self.birthcountry
+        return bool(self.birthday) and bool(self.birthcity) and bool(self.birthdepartement) and bool(self.birthcountry)
 
     @property
     def address_completed(self):
         """Return true if all current address information is completed."""
-        return self.street_number and self.street and self.city and self.country
+        return bool(self.street_number) and bool(self.street) and bool(self.city) and bool(self.country)
 
     @property
     def phone_mail_completed(self):
         """Return true if email, phone and cellphone are completed."""
-        return self.email and self.cellphone and self.phone
+        return bool(self.email) and bool(self.cellphone) and bool(self.phone)
 
     @property
     def completed(self):
         """Return true if civil_status, birth information,
         address information and contact information are completed."""
-        return (self.civil_status_completed and self.birth_completed
-                and self.address_completed and self.phone_mail_completed)
+        return (bool(self.civil_status_completed) and bool(self.birth_completed)
+                and bool(self.address_completed) and bool(self.phone_mail_completed))
 
 class Room(models.Model):
     """Store a room."""

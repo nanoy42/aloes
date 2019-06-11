@@ -43,7 +43,7 @@ def rent_contract(request, pk):
     else:
         gender = "Mme."
         born_accorded = "née"
-    floor = str(room[1]) + "ieme étage"
+    floor = str(room)[1] + "ieme étage"
     if room.building == "G":
         template = ODTGenerator(
             'generate_docs/rent_contract_aloes2.odt',

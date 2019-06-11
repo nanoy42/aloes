@@ -30,7 +30,7 @@
 		</button>
 		<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
 			{% if tenant.date_of_departure %}
-			<a class="dropdown-item{% if not tenant.birth_completed%} tooltip2{% endif %}" href="{% url 'generate_docs:leaseEndAttestation' tenant.pk %}"{% if not tenant.birth_completed %} title="Il pourrait manquer des informations au locataire"{% endif %}>Attestation de fin de bail{% if not tenant.birth_completed %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
+			<a class="dropdown-item{% if not tenant.birth_completed%} tooltip2{% endif %}" href="{% url 'generate_docs:leaseEndAttestation' tenant.pk %}"{% if not tenant.birth_completed %} title="Il pourrait manquer des informations au locataire"{% endif %}><i class="fa fa-file-alt"></i> Attestation de fin de bail{% if not tenant.birth_completed %} <i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
 			{% endif %}
 			{% if tenant.current_leasing %}
 			<a class="dropdown-item{% if not tenant.birth_completed or not tenant.current_leasing.date_of_entry %} tooltip2{% endif %}" href="{% url 'generate_docs:leaseAttestation' tenant.pk %}" {% if not tenant.birth_completed or not tenant.current_leasing.date_of_entry %}title="{% if not tenant.birth_completed %}Il pourrait manquer des informations au locataire{% endif %}{% if not tenant.birth_completed and not tenant.current_leasing.date_of_entry %};{% endif %}{% if not tenant.current_leasing.date_of_entry %}Pas de date d'entrée{% endif %}"{% endif %}><i class="fa fa-file-alt"></i> Attestation de résidence {% if not tenant.birth_completed or not tenant.current_leasing.date_of_entry %}<i class="fa fa-exclamation-triangle"></i>{% endif %}</a>
