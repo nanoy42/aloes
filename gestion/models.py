@@ -149,7 +149,7 @@ class Tenant(models.Model):
             leasings = leasings.exclude(pk=self.current_leasing.pk)
         if self.next_leasing:
             leasings = leasings.exclude(pk=self.next_leasing.pk)
-        return leasings.order_by('-pk')
+        return leasings.order_by('-date_of_entry')
 
     @property
     def previous_rooms(self):
@@ -254,7 +254,7 @@ class Room(models.Model):
             leasings = leasings.exclude(pk=self.current_leasing.pk)
         if self.next_leasing:
             leasings = leasings.exclude(pk=self.next_leasing.pk)
-        return leasings.order_by('-pk')
+        return leasings.order_by('-date_of_entry')
 
     @property
     def previous_tenants(self):
