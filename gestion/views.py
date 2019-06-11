@@ -387,10 +387,10 @@ def add_next_tenant(request, pk):
         messages.error(request, "Cette chambre est déjà reservée")
         return redirect(reverse('gestion:roomProfile', kwargs={'pk': pk}))
     form = SelectTenantWNRForm(request.POST or None)
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        return redirect(request.POST.get('cancel') or "home")
     if form.is_valid():
-        if 'cancel' in request.POST:
-            messages.success(request, "Demande annulée")
-            return redirect(request.POST.get('cancel') or "home")
         tenant = form.cleaned_data['tenant']
         if tenant.next_leasing:
             messages.error(request, "Ce locataire a déjà reservé une chambre")
@@ -429,10 +429,10 @@ def room_move_in_direct(request, pk):
         messages.error(request, "La chambre n'est pas vide")
         return redirect(reverse('gestion:roomProfile', kwargs={"pk": pk}))
     form = RoomMoveInDirectForm(request.POST or None)
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        return redirect(request.POST.get('cancel') or "home")
     if form.is_valid():
-        if 'cancel' in request.POST:
-            messages.success(request, "Demande annulée")
-            return redirect(request.POST.get('cancel') or "home")
         tenant = form.cleaned_data['tenant']
         if tenant.room:
             messages.error(request, "Ce locataire possède déjà une chambre")
@@ -649,10 +649,10 @@ def add_next_room(request, pk):
         messages.error(request, "Ce locataire a déjà réservé une chambre")
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': pk}))
     form = SelectRoomWNTForm(request.POST or None)
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        return redirect(request.POST.get('cancel') or "home")
     if form.is_valid():
-        if 'cancel' in request.POST:
-            messages.success(request, "Demande annulée")
-            return redirect(request.POST.get('cancel') or "home")
         room = form.cleaned_data['room']
         if room.next_leasing:
             messages.error(request, "Cette chambre est déjà réservée")
@@ -691,10 +691,10 @@ def tenant_move_in_direct(request, pk):
         messages.error(request, "Ce locataire possède déjà une chambre")
         return redirect(reverse('gestion:tenantProfile', kwargs={"pk": pk}))
     form = TenantMoveInDirectForm(request.POST or None)
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        return redirect(request.POST.get('cancel') or "home")
     if form.is_valid():
-        if 'cancel' in request.POST:
-            messages.success(request, "Demande annulée")
-            return redirect(request.POST.get('cancel') or "home")
         room = form.cleaned_data['room']
         if room.current_leasing:
             messages.error(request, "Cette chambre n'est pas vide")
