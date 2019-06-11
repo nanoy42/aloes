@@ -147,7 +147,6 @@ class UserCreate(SuperuserRequiredMixin, ImprovedCreateView): # pylint: disable=
         instance.set_password(instance.username)
         instance.is_staff = True
         instance.save()
-        messages.success(self.request, self.success_message)
         return super(UserCreate, self).form_valid(form)
 
 class UserEdit(SuperuserRequiredMixin, ImprovedUpdateView): # pylint: disable=too-many-ancestors
