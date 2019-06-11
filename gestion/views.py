@@ -1087,7 +1087,7 @@ def export_csv(request):
     response['Content-Disposition'] = 'attachment; filename="export.csv"'
     writer = csv.writer(response)
     writer.writerow(['Chambre (lot)', 'Locataire (email)',
-                     'Réservation', 'Réparation', 'Loyer'])
+                     'Réservation', 'Réparation', 'Loyer', 'Observations'])
     rooms = Room.objects.all()
     for room in rooms:
         if room.current_leasing:
@@ -1100,7 +1100,7 @@ def export_csv(request):
                          tenant_text,
                          str(room.next_leasing.tenant if room.next_leasing else "Pas réservée"),
                          str(room.renovation or "Non indiqué"),
-                         str(room.rent_type or "Non indiqué")])
+                         str(room.rent_type or "Non indiqué"), str(room.observations)])
     tenants = Tenant.objects.filter(current_leasing=None)
     for tenant in tenants:
         writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
