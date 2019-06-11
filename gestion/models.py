@@ -186,6 +186,11 @@ class Tenant(models.Model):
 
 class Room(models.Model):
     """Store a room."""
+    EMPTY_CC = "table-warning"
+    TEMPORARY_CC = "table-primary"
+    LEAVING_CC = "table-success"
+    NONE_CC = ""
+
     class Meta:
         verbose_name = "Chambre"
 
@@ -256,6 +261,19 @@ class Room(models.Model):
         """Return all tenants of the room, except for current and next (if they exist)."""
         pks = [leasing.tenant.pk for leasing in self.previous_leasings]
         return Tenant.objects.filter(pk__in=pks)
+
+    @property
+    def color_class(self):
+        """Return the appropriate color class."""
+        if self.current_leasing:
+            if self.current_leasing.tenant.leaving:
+                return self.LEAVING_CC
+            elif self.current_leasing.tenant.temporary:
+                return self.TEMPORARY_CC
+            else:
+                return self.NONE_CC
+        else:
+            return self.EMPTY_CC
 
 
 class Leasing(models.Model):
