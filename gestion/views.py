@@ -587,6 +587,9 @@ class TenantCreate(AdminRequiredMixin, ImprovedCreateView): # pylint: disable=to
 def import_tenant(request):
     """Import tenant in json format"""
     form = ImportTenantForm(request.POST or None)
+    if 'cancel' in request.POST:
+            messages.success(request, "Demande annulée")
+            return redirect(request.POST.get('cancel') or "home")
     if form.is_valid():
         json_data = form.cleaned_data["jsonfield"]
         fields = json_data[0]["fields"]
@@ -619,7 +622,17 @@ def import_tenant(request):
         tenant.save()
         messages.success(request, "Le locataire a bien été importé. Pensez à vérifier l'école, aisni que le pays de résidence actuel.")
         return redirect(reverse("gestion:tenantProfile", kwargs={"pk": tenant.pk}))
-    return render(request, "form.html", {"form": form})
+    return render(
+        request,
+        "form.html",
+        {
+            "form": form,
+            "form_title": "Importation d'un locataire",
+            "p": "Copiez-collez les données JSON",
+            "form_button": "Importer",
+            "form_icon": "user-plus"
+        }
+    )
 
 @admin_required
 def add_next_room(request, pk):

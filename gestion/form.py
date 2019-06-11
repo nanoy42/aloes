@@ -261,7 +261,7 @@ class RoomMoveInDirectForm(forms.Form):
 
 class ImportTenantForm(forms.Form):
     """Load json data to create a tenant."""
-    jsonfield = forms.CharField(max_length=32768)
+    jsonfield = forms.CharField(max_length=32768, label="Données JSON")
 
     def clean_jsonfield(self):
         """Clean field"""
