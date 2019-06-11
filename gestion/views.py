@@ -78,6 +78,7 @@ def gestion_index(request):  # pylint : disable=too-many-branches
                 res = res.order_by("current_leasing__tenant__first_name")
             if search_form.cleaned_data['sort'] == "last_name":
                 res = res.order_by("current_leasing__tenant__name")
+        search_form = SearchForm()
     else:
         res = Room.objects.filter(is_active=True).select_related('current_leasing').select_related('next_leasing').select_related('renovation').select_related('rent_type').order_by("room")
     return render(
