@@ -3,6 +3,7 @@
 <form action="{% url 'gestion:indexGestion' %}" method="get">
 {% csrf_token %}
 {% bootstrap_form search_form %}
-<button type="submit" class="btn btn-primary">Rechercher</button>
+<button type="submit" class="btn btn-primary" name="search">Rechercher</button><br><br>
+<button type="submit" class="btn btn-info" name="csv">Export CSV</button>
 </form>
 <br><br>

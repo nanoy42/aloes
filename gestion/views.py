@@ -78,19 +78,42 @@ def gestion_index(request):  # pylint : disable=too-many-branches
                 res = res.order_by("current_leasing__tenant__first_name")
             if search_form.cleaned_data['sort'] == "last_name":
                 res = res.order_by("current_leasing__tenant__name")
+        mode = "search" if "search" in request.GET else "csv"
         search_form = SearchForm()
     else:
         res = Room.objects.filter(is_active=True).select_related('current_leasing').select_related('next_leasing').select_related('renovation').select_related('rent_type').order_by("room")
-    return render(
-        request,
-        "gestion/gestion_index.html",
-        {
-            "search_form": search_form,
-            "sidebar": True,
-            "active": "default",
-            "rooms": res
-        }
-    )
+        mode = "search"
+    if mode == "search":
+        return render(
+            request,
+            "gestion/gestion_index.html",
+            {
+                "search_form": search_form,
+                "sidebar": True,
+                "active": "default",
+                "rooms": res
+            }
+        )
+    else:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="export.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Chambre (lot)', 'Locataire (email)',
+                        'Réservation', 'Réparation', 'Loyer', 'Observations'])
+        for room in res:
+            if room.current_leasing:
+                tenant_text = str(room.current_leasing.tenant) + \
+                    "(" + str(room.current_leasing.tenant.email) + ")"
+            else:
+                tenant_text = "Pas de locataire actuel"
+
+            writer.writerow([str(room),
+                            tenant_text,
+                            str(room.next_leasing.tenant if room.next_leasing else "Pas réservée"),
+                            str(room.renovation or "Non indiqué"),
+                            str(room.rent_type or "Non indiqué"), str(room.observations)])
+        return response
+
 
 ########## Renovations ##########
 
