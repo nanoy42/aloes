@@ -227,6 +227,7 @@ class Room(models.Model):
     def __str__(self):
         return self.room
 
+    @property
     def building(self):
         """Return building of the room i.e. the first char of room."""
         return self.room[0]
