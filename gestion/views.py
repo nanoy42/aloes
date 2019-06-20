@@ -854,10 +854,10 @@ def leave(request, pk):
     leave_form = LeaveForm(request.POST or None, instance=tenant)
     message = "Vous vous apprêtez à faire quitter de la résidence " + \
         str(tenant) + ". Pour continuer, indiquer la date officielle de départ de la résidence"
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        return redirect(request.POST.get('cancel') or "home")
     if leave_form.is_valid():
-        if 'cancel' in request.POST:
-            messages.success(request, "Demande annulée")
-            return redirect(request.POST.get('cancel') or "home")
         leave_form.save()
         if tenant.current_leasing:
             leasing = tenant.current_leasing
@@ -905,10 +905,10 @@ def move_out(request, pk, mode):
     else:
         form_title = "Déménager " + str(tenant)
         form_button = "Déménager"
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        return redirect(request.POST.get('cancel') or "home")
     if move_out_form.is_valid():
-        if 'cancel' in request.POST:
-            messages.success(request, "Demande annulée")
-            return redirect(request.POST.get('cancel') or "home")
         leasing = tenant.current_leasing
         leasing.date_of_departure = move_out_form.cleaned_data['date']
         leasing.save()
@@ -970,10 +970,10 @@ def move_in(request, pk, mode): # pylint: disable=too-many-return-statements
     move_in_form = DateForm(request.POST or None)
     message = "Veuillez indiquer la date d'entrée officielle dans la chambre " + \
         str(tenant.next_room) + " pour " + str(tenant)
+    if 'cancel' in request.POST:
+        messages.success(request, "Demande annulée")
+        return redirect(request.POST.get('cancel') or "home")
     if move_in_form.is_valid():
-        if 'cancel' in request.POST:
-            messages.success(request, "Demande annulée")
-            return redirect(request.POST.get('cancel') or "home")
         room = tenant.next_room
         leasing = tenant.next_leasing
         leasing.date_of_entry = move_in_form.cleaned_data['date']
