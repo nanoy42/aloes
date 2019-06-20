@@ -10,14 +10,14 @@ def format_date(value):
     """Filter to display date correctly."""
     try:
         return value.strftime('%d/%m/%Y')
-    except ValueError:  
+    except:  
         return ""
 
 def format_datetime(value):
     """Filter to display date and time correctly."""
     try:
         return value.strftime('%d/%m/%Y %Hh%i')
-    except ValueError:
+    except:
         return ""
 
 class ODTGenerator: # pylint: disable=too-few-public-methods
