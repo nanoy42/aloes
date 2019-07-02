@@ -23,7 +23,7 @@ def apl_infos(request, pk):
     leasing = get_object_or_404(Leasing, pk=pk)
     template = ODTGenerator(
         'generate_docs/apl_infos.odt',
-        'apl_infos_' + leasing.tenant.first_name + leasing.tenant.name + '.odt'
+        ('apl_infos_' + leasing.tenant.first_name + leasing.tenant.name + '.odt').replace(" ", "")
     )
     return template.render({'leasing': leasing})
 
@@ -51,12 +51,12 @@ def rent_contract(request, pk):
     if room.building == "G":
         template = ODTGenerator(
             'generate_docs/rent_contract_aloes2.odt',
-            'contrat_location_' + leasing.tenant.first_name + leasing.tenant.name + '_aloes2.odt'
+            ('contrat_location_' + leasing.tenant.first_name + leasing.tenant.name + '_aloes2.odt').replace(" ", "")
         )
     else:
         template = ODTGenerator(
             'generate_docs/rent_contract_aloes1.odt',
-            'contrat_location_' + leasing.tenant.first_name + leasing.tenant.name + '_aloes1.odt'
+            ('contrat_location_' + leasing.tenant.first_name + leasing.tenant.name + '_aloes1.odt').replace(" ", "")
         )
     return template.render({
         'leasing': leasing,
@@ -80,7 +80,7 @@ def civil_status(request, pk):
     total_cheque = room.rent_type.rent + room.rent_type.total_rent + room.rent_type.application_fee
     template = ODTGenerator(
         'generate_docs/civil_status.odt',
-        'etat_civil' + leasing.tenant.first_name + leasing.tenant.name + '.odt'
+        ('etat_civil' + leasing.tenant.first_name + leasing.tenant.name + '.odt').replace(" ", "")
     )
     return template.render({
         'leasing': leasing,
@@ -105,7 +105,7 @@ def guarantee(request, pk):
         address = "4 place Édouard Branly"
     template = ODTGenerator(
         'generate_docs/guarantee.odt',
-        'engagement_caution_' + leasing.tenant.first_name + leasing.tenant.name + '.odt'
+        ('engagement_caution_' + leasing.tenant.first_name + leasing.tenant.name + '.odt').replace(" ", "")
     )
     return template.render({
         'leasing': leasing,
@@ -127,7 +127,7 @@ def insurance_expiration(request, pk):
     tenant = leasing.tenant
     template = ODTGenerator(
         'generate_docs/insurance_expiration.odt',
-        'expiration_assurance_' + tenant.first_name + tenant.name + '.odt'
+        ('expiration_assurance_' + tenant.first_name + tenant.name + '.odt').replace(" ", "")
     )
     return template.render({
         'leasing': leasing,
@@ -147,7 +147,7 @@ def lease_end_attestation(request, pk):
     if tenant.date_of_departure:
         template = ODTGenerator(
             'generate_docs/lease_end_attestation.odt',
-            'attestationFinDeBail' + tenant.first_name + tenant.name + '.odt'
+            ('attestationFinDeBail' + tenant.first_name + tenant.name + '.odt').replace(" ", "")
         )
         if tenant.gender == "F":
             gender = "Mme."
@@ -186,7 +186,7 @@ def lease_attestation(request, pk):
             born_accorded = "né"
         template = ODTGenerator(
             'generate_docs/lease_attestation.odt',
-            'attesationResidence' + tenant.first_name + tenant.name + '.odt'
+            ('attesationResidence' + tenant.first_name + tenant.name + '.odt').replace(" ", "")
         )
         return template.render({
             'now': datetime.now(),
@@ -217,7 +217,7 @@ def lease_attestation_english(request, pk):
             born_accorded = "né"
         template = ODTGenerator(
             'generate_docs/lease_attestation_english.odt',
-            'attesationResidence' + tenant.first_name + tenant.name + '.odt'
+            ('attesationResidence' + tenant.first_name + tenant.name + '.odt').replace(" ", "")
         )
         return template.render({
             'now': datetime.now(),
@@ -242,7 +242,7 @@ def tenant_record(request, pk):
     room = leasing.room
     template = ODTGenerator(
         'generate_docs/tenant_record.odt',
-        'fiche_locataire_' + tenant.first_name + tenant.name + '.odt'
+        ('fiche_locataire_' + tenant.first_name + tenant.name + '.odt').replace(" ", "")
     )
     return template.render({
         'leasing': leasing,
@@ -265,7 +265,7 @@ def reservation_attestation(request, pk):
         return redirect(reverse('gestion:tenantProfile', kwargs={'pk': tenant.pk}))
     template = ODTGenerator(
         'generate_docs/reservation_attestation.odt',
-        'attestation_reservation_' + tenant.first_name + tenant.name + '.odt'
+        ('attestation_reservation_' + tenant.first_name + tenant.name + '.odt').replace(" ", "")
     )
     return template.render({'tenant': tenant, 'now': datetime.now(), 'user': request.user})
 
@@ -308,6 +308,6 @@ def pair(iterator):
             b = next(iterator, None)
             print(a)
             print(b)
-            yield a,b
+            yield a, b
     except StopIteration:
         return
