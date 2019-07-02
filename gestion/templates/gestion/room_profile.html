@@ -37,10 +37,10 @@
 		<h3>Informations</h3>
 		<div class="row">
 			<div class="col">
-				<div class="form-group"><label for="id_room">Chambre</label><input type="text" name="room" value="{{room}}" maxlength="6" class="form-control" placeholder="Chambre" title="" required id="id_room" disabled/></div>
+				<div class="form-group"><label for="id_room">Chambre</label><input type="text" name="room" value="{{room}}" maxlength="6" class="form-control" placeholder="Chambre" title="" required id="id_room" readonly/></div>
 			</div>
 			<div class="col">
-				<div class="form-group"><label for="id_lot">Lot</label><input type="number" name="lot" value="{{room.lot}}" min="0" class="form-control" placeholder="Lot" title="" required id="id_lot" disabled/></div>
+				<div class="form-group"><label for="id_lot">Lot</label><input type="number" name="lot" value="{{room.lot}}" min="0" class="form-control" placeholder="Lot" title="" required id="id_lot" readonly/></div>
 			</div>
 		</div>
 		<div class="row">
@@ -65,7 +65,7 @@
 		<h3>Observations</h3>
 		<div class="row">
 			<div class="col">
-				<div class="form-group"><label for="id_observations">Observations</label><textarea name="observations" cols="40" rows="10" class="form-control" placeholder="Observations" title="" id="id_observations" disabled>{{room.observations}}</textarea></div>
+				<div class="form-group"><label for="id_observations">Observations</label><textarea name="observations" cols="40" rows="10" class="form-control" placeholder="Observations" title="" id="id_observations" readonly>{{room.observations}}</textarea></div>
 			</div>
 		</div>
 	</div>

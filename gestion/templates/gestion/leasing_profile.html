@@ -30,10 +30,10 @@
 </div>
 <div class="row">
 	<div class="col">
-		<div class="form-group"><label for="id_date_of_entry">Date d'entrée</label><input type="text" name="date_of_entry" value="{{leasing.date_of_entry}}" class="form-control" placeholder="Date d'entrée" title="" id="id_date_of_entry" disabled/></div>
+		<div class="form-group"><label for="id_date_of_entry">Date d'entrée</label><input type="text" name="date_of_entry" value="{{leasing.date_of_entry}}" class="form-control" placeholder="Date d'entrée" title="" id="id_date_of_entry" readonly/></div>
 	</div>
 	<div class="col">
-		<div class="form-group"><label for="id_date_of_departure">Date de sortie</label><input type="text" name="date_of_departure" value="{{leasing.date_of_departure}}" class="form-control" placeholder="Date de sortie" title="" id="id_date_of_departure" disabled/></div>
+		<div class="form-group"><label for="id_date_of_departure">Date de sortie</label><input type="text" name="date_of_departure" value="{{leasing.date_of_departure}}" class="form-control" placeholder="Date de sortie" title="" id="id_date_of_departure" readonly/></div>
 	</div>
 </div>
 <h4>Dossier</h4>
@@ -42,7 +42,7 @@
 		<div class="form-group"><div class="checkbox"><label for="id_contract_signed"><input type="checkbox" name="contract_signed" class="" id="id_contract_signed" {% if leasing.contract_signed %}checked{% endif %} disabled/> Contrat signé</label></div></div>
 	</div>
 	<div class="col">
-		<div class="form-group"><label for="id_contract_date">Date du contrat</label><input type="text" name="contract_date" value="{{leasing.contract_date}}" class="form-control" placeholder="Date du contrat" title="" id="id_contract_date" disabled/></div>
+		<div class="form-group"><label for="id_contract_date">Date du contrat</label><input type="text" name="contract_date" value="{{leasing.contract_date}}" class="form-control" placeholder="Date du contrat" title="" id="id_contract_date" readonly/></div>
 	</div>
 </div>
 <h5>Garant</h5>
@@ -70,7 +70,7 @@
 </div>
 <div class="row">
 	<div class="col">
-		<div class="form-group"><label for="id_bail">Caution</label><input type="number" name="bail" value="{{leasing.bail}}" step="0.01" class="form-control" placeholder="Caution" title="" id="id_bail" disabled/></div>
+		<div class="form-group"><label for="id_bail">Caution</label><input type="number" name="bail" value="{{leasing.bail}}" step="0.01" class="form-control" placeholder="Caution" title="" id="id_bail" readonly/></div>
 	</div>
 </div>
 <h5>Garantie</h5>
@@ -79,19 +79,19 @@
 		<div class="form-group"><div class="checkbox"><label for="id_check_guarantee"><input type="checkbox" name="check_guarantee" class="" id="id_check_guarantee" {% if check_guarantee %}checked{% endif %} disabled/> Chèque pour le complément de dépot de garantie</label></div></div>
 	</div>
 	<div class="col">
-		<div class="form-group"><label for="id_guarantee">Garantie</label><input type="number" name="guarantee" value="{{leasing.guarantee}}" step="0.01" class="form-control" placeholder="Garantie" title="" id="id_guarantee" disabled/></div>
+		<div class="form-group"><label for="id_guarantee">Garantie</label><input type="number" name="guarantee" value="{{leasing.guarantee}}" step="0.01" class="form-control" placeholder="Garantie" title="" id="id_guarantee" readonly/></div>
 	</div>
 </div>
 <h5>Autres</h5>
 <div class="row">
 	<div class="col">
-		<div class="form-group"><label for="id_insuranceDeadline">Date de fin d'assurance</label><input type="text" name="insuranceDeadline" value="{{leasing.insuranceDeadline}}" class="form-control" placeholder="Date de fin d'assurance" title="" id="id_insuranceDeadline" disabled/></div>
+		<div class="form-group"><label for="id_insuranceDeadline">Date de fin d'assurance</label><input type="text" name="insuranceDeadline" value="{{leasing.insuranceDeadline}}" class="form-control" placeholder="Date de fin d'assurance" title="" id="id_insuranceDeadline" readonly/></div>
 	</div>
 	<div class="col">
-		<div class="form-group"><label for="id_apl">APL</label><input type="text" name="apl" value="{{leasing.apl}}" class="form-control" placeholder="APL" title="" id="id_apl" disabled/></div>
+		<div class="form-group"><label for="id_apl">APL</label><input type="text" name="apl" value="{{leasing.apl}}" class="form-control" placeholder="APL" title="" id="id_apl" readonly/></div>
 	</div>
 	<div class="col">
-		<div class="form-group"><label for="id_caf">CAF</label><input type="text" name="caf" value="{{leasing.caf}}" maxlength="255" class="form-control" placeholder="CAF" title="" id="id_caf" disabled/></div>
+		<div class="form-group"><label for="id_caf">CAF</label><input type="text" name="caf" value="{{leasing.caf}}" maxlength="255" class="form-control" placeholder="CAF" title="" id="id_caf" readonly/></div>
 	</div>
 </div>
 <div class="row">
@@ -128,7 +128,7 @@
 </div>
 <div class="row">
 	<div class="col">
-		<div class="form-group"><label for="id_missing_documents">Documents manquants</label><textarea name="missing_documents" cols="40" rows="10" class="form-control" placeholder="Documents manquants" title="" id="id_missing_documents" disabled>{{leasing.missing_documents}}</textarea></div>
+		<div class="form-group"><label for="id_missing_documents">Documents manquants</label><textarea name="missing_documents" cols="40" rows="10" class="form-control" placeholder="Documents manquants" title="" id="id_missing_documents" readonly>{{leasing.missing_documents}}</textarea></div>
 	</div>
 </div>
 	

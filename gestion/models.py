@@ -78,7 +78,7 @@ class Tenant(models.Model):
     observations = models.TextField(verbose_name="Observations", blank=True)
     temporary = models.BooleanField(default=False, verbose_name="Passager")
     cellphone = models.CharField(
-        max_length=10,
+        max_length=25,
         verbose_name="Numéro de téléphone portable",
         blank=True
     )
@@ -98,11 +98,11 @@ class Tenant(models.Model):
     birthcountry = models.CharField(max_length=255, verbose_name="Pays de naissance", blank=True)
     street_number = models.CharField(max_length=255, verbose_name="N° de rue", blank=True, null=True)
     street = models.CharField(max_length=255, verbose_name="Rue", blank=True)
-    zipcode = models.PositiveIntegerField(verbose_name="Code postal", blank=True, null=True)
+    zipcode = models.CharField(max_length=10, verbose_name="Code postal", blank=True)
     city = models.CharField(max_length=255, verbose_name="Ville", blank=True)
     country = models.CharField(max_length=255, verbose_name="Pays", blank=True)
     email = models.EmailField(verbose_name="Email", blank=True)
-    phone = models.CharField(max_length=10, verbose_name="Téléphone fixe", blank=True)
+    phone = models.CharField(max_length=25, verbose_name="Téléphone fixe", blank=True)
     current_leasing = models.ForeignKey(
         'Leasing',
         on_delete=models.PROTECT,

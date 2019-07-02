@@ -42,6 +42,9 @@
 		</div>
 	</div>
 	{% endif %}
+	{% if tenant.email %}
+		<a href="mailto:{{tenant.email}}" class="btn btn-primary"><i class="fa fa-envelope"></i> Mail</a>
+	{% endif %}
 	{% if tenant.current_leasing %}
 		<a href="{% url 'gestion:indexGestion' %}#room-{{tenant.current_leasing.room.pk}}" class="btn btn-primary"><i class="fa fa-share fa-flip-horizontal"></i> Retour à la liste des chambres</a>
 	{% endif %}
@@ -53,10 +56,10 @@
 		<h4>Informations générales</h4>
 		<div class="row">
 			<div class="col">
-				<div class="form-group"><label for="id_first_name">Prénom</label><input type="text" name="first_name" value="{{tenant.first_name}}" maxlength="255" class="form-control" placeholder="Prénom" title="" required id="id_first_name" disabled/></div>
+				<div class="form-group"><label for="id_first_name">Prénom</label><input type="text" name="first_name" value="{{tenant.first_name}}" maxlength="255" class="form-control" placeholder="Prénom" title="" required id="id_first_name" readonly/></div>
 			</div>
 			<div class="col">
-				<div class="form-group"><label for="id_name">Nom</label><input type="text" name="name" value="{{tenant.name}}" maxlength="255" class="form-control" placeholder="Nom" title="" required id="id_name" disabled/></div>
+				<div class="form-group"><label for="id_name">Nom</label><input type="text" name="name" value="{{tenant.name}}" maxlength="255" class="form-control" placeholder="Nom" title="" required id="id_name" readonly/></div>
 			</div>
 		</div>
 		<div class="row">
@@ -69,15 +72,15 @@
 				</div>
 			</div>
 			<div class="col">
-				<div class="form-group"><label for="id_email">Email</label><input type="email" name="email" maxlength="254" class="form-control" placeholder="Email" title="" id="id_email" value="{{tenant.email}}" disabled/></div>
+				<div class="form-group"><label for="id_email">Email</label><input type="email" name="email" maxlength="254" class="form-control" placeholder="Email" title="" id="id_email" value="{{tenant.email}}" readonly/></div>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col">
-				<div class="form-group"><label for="id_cellphone">Numéro de téléphone portable</label><input type="text" name="cellphone" value="{{tenant.cellphone}}" maxlength="10" class="form-control" placeholder="Numéro de téléphone portable" title="" id="id_cellphone" disabled/></div>
+				<div class="form-group"><label for="id_cellphone">Numéro de téléphone portable</label><input type="text" name="cellphone" value="{{tenant.cellphone}}" maxlength="10" class="form-control" placeholder="Numéro de téléphone portable" title="" id="id_cellphone" readonly/></div>
 			</div>
 			<div class="col">
-				<div class="form-group"><label for="id_phone">Téléphone fixe</label><input type="text" name="phone" value="{{tenant.phone}}" maxlength="10" class="form-control" placeholder="Téléphone fixe" title="" id="id_phone" disabled/></div>
+				<div class="form-group"><label for="id_phone">Téléphone fixe</label><input type="text" name="phone" value="{{tenant.phone}}" maxlength="10" class="form-control" placeholder="Téléphone fixe" title="" id="id_phone" readonly/></div>
 			</div>
 		</div>
 		<div class="row">
@@ -90,16 +93,16 @@
 				</div>
 			</div>
 			<div class="col">
-				<div class="form-group"><label for="id_school_year">Année d'étude</label><input type="number" name="school_year" value="{{tenant.school_year}}" min="0" class="form-control" placeholder="Année d'étude" title="" id="id_school_year" disabled/></div>
+				<div class="form-group"><label for="id_school_year">Année d'étude</label><input type="number" name="school_year" value="{{tenant.school_year}}" min="0" class="form-control" placeholder="Année d'étude" title="" id="id_school_year" readonly/></div>
 			</div>
 		</div>
 		<div class="row">
 				<div class="col">
-					<div class="form-group"><label for="id_date_of_entry">Date d'entrée à la rez</label><input  class="form-control" id="id_date_of_entry" title="" name="date_of_entry" type="text" class="form-control" placeholder="Date" value="{{tenant.date_of_entry}}" disabled/></div>
+					<div class="form-group"><label for="id_date_of_entry">Date d'entrée à la rez</label><input  class="form-control" id="id_date_of_entry" title="" name="date_of_entry" type="text" class="form-control" placeholder="Date" value="{{tenant.date_of_entry}}" readonly/></div>
 				</div>
 			<div class="col">
 				{% if tenant.date_of_departure %}
-					<div class="form-group"><label for="id_date_of_departure">Date de sortie de la rez</label><input  class="form-control" id="id_date_of_departure" title="" name="date_of_departure" type="text" class="form-control" placeholder="Date" value="{{tenant.date_of_departure}}" disabled/></div>
+					<div class="form-group"><label for="id_date_of_departure">Date de sortie de la rez</label><input  class="form-control" id="id_date_of_departure" title="" name="date_of_departure" type="text" class="form-control" placeholder="Date" value="{{tenant.date_of_departure}}" readonly/></div>
 				{% else %}
 				Utiliser la fonction "Quitter la résidence" pour avoir accès à la date de départ
 				{% endif %}
@@ -108,40 +111,40 @@
 		<h4>Naissance</h4>
 		<div class="row">
 			<div class="col">
-				<div class="form-group"><label for="id_birthday">Date de naissance</label><input type="text" name="birthday" value="{{tenant.birthday}}" class="form-control" placeholder="Date de naissance" title="" id="id_birthday" disabled/></div>
+				<div class="form-group"><label for="id_birthday">Date de naissance</label><input type="text" name="birthday" value="{{tenant.birthday}}" class="form-control" placeholder="Date de naissance" title="" id="id_birthday" readonly/></div>
 			</div>
 			<div class="col">
-				<div class="form-group"><label for="id_birthcity">Ville de naissance</label><input type="text" name="birthcity" value="{{tenant.birthcity}}" maxlength="255" class="form-control" placeholder="Ville de naissance" title="" id="id_birthcity" disabled/></div>
+				<div class="form-group"><label for="id_birthcity">Ville de naissance</label><input type="text" name="birthcity" value="{{tenant.birthcity}}" maxlength="255" class="form-control" placeholder="Ville de naissance" title="" id="id_birthcity" readonly/></div>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col">
-				<div class="form-group"><label for="id_birthdepartement">Département de naissance</label><input type="text" name="birthdepartement" value="{{tenant.birthdepartement}}" maxlength="255" class="form-control" placeholder="Département de naissance" title="" id="id_birthdepartement" disabled/></div>
+				<div class="form-group"><label for="id_birthdepartement">Département de naissance</label><input type="text" name="birthdepartement" value="{{tenant.birthdepartement}}" maxlength="255" class="form-control" placeholder="Département de naissance" title="" id="id_birthdepartement" readonly/></div>
 			</div>
 			<div class="col">
-				<div class="form-group"><label for="id_birthcountry">Pays de naissance</label><input type="text" name="birthcountry" value="{{tenant.birthcountry}}" maxlength="255" class="form-control" placeholder="Pays de naissance" title="" id="id_birthcountry" disabled/></div>
+				<div class="form-group"><label for="id_birthcountry">Pays de naissance</label><input type="text" name="birthcountry" value="{{tenant.birthcountry}}" maxlength="255" class="form-control" placeholder="Pays de naissance" title="" id="id_birthcountry" readonly/></div>
 			</div>
 		</div>
 		<h4>Adresse</h4>
 		<div class="row">
 			<div class="col">
-				<div class="form-group"><label for="id_street_number">N° de rue</label><input type="number" name="street_number" value="{{tenant.street_number}}" min="0" class="form-control" placeholder="N° de rue" title="" id="id_street_number" disabled/></div>
+				<div class="form-group"><label for="id_street_number">N° de rue</label><input type="number" name="street_number" value="{{tenant.street_number}}" min="0" class="form-control" placeholder="N° de rue" title="" id="id_street_number" readonly/></div>
 			</div>
 			<div class="col">
-				<div class="form-group"><label for="id_street">Rue</label><input type="text" name="street" value="{{tenant.street}}" maxlength="255" class="form-control" placeholder="Rue" title="" id="id_street" disabled/></div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col">
-				<div class="form-group"><label for="id_zipcode">Code postal</label><input type="number" name="zipcode" value="{{tenant.zipcode}}" min="0" class="form-control" placeholder="Code postal" title="" id="id_zipcode" disabled/></div>
-			</div>
-			<div class="col">
-				<div class="form-group"><label for="id_city">Ville</label><input type="text" name="city" value="{{tenant.city}}" maxlength="255" class="form-control" placeholder="Ville" title="" id="id_city" disabled/></div>
+				<div class="form-group"><label for="id_street">Rue</label><input type="text" name="street" value="{{tenant.street}}" maxlength="255" class="form-control" placeholder="Rue" title="" id="id_street" readonly/></div>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col">
-				<div class="form-group"><label for="id_country">Pays</label><input type="text" name="country" value="{{tenant.country}}" maxlength="255" class="form-control" placeholder="Pays" title="" id="id_country" disabled/></div>
+				<div class="form-group"><label for="id_zipcode">Code postal</label><input type="text" name="zipcode" value="{{tenant.zipcode}}" class="form-control" placeholder="Code postal" title="" id="id_zipcode" readonly/></div>
+			</div>
+			<div class="col">
+				<div class="form-group"><label for="id_city">Ville</label><input type="text" name="city" value="{{tenant.city}}" maxlength="255" class="form-control" placeholder="Ville" title="" id="id_city" readonly/></div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="form-group"><label for="id_country">Pays</label><input type="text" name="country" value="{{tenant.country}}" maxlength="255" class="form-control" placeholder="Pays" title="" id="id_country" readonly/></div>
 			</div>
 		</div>
 	</div>
@@ -184,7 +187,7 @@
 			</tbody>
 		</table>
 		<h3>Observations</h3>
-		<div class="form-group"><label for="id_observations">Observations</label><textarea name="observations" cols="40" rows="10" class="form-control" placeholder="Observations" title="" id="id_observations" disabled>{{tenant.observations}}</textarea></div>
+		<div class="form-group"><label for="id_observations">Observations</label><textarea name="observations" cols="40" rows="10" class="form-control" placeholder="Observations" title="" id="id_observations" readonly>{{tenant.observations}}</textarea></div>
 		<div class="form-group"><div class="checkbox"><label for="id_temporary"><input type="checkbox" name="temporary" class="" id="id_temporary" {% if tenant.temporary %}checked{% endif %} disabled/> Passager</label></div></div>
 		<div class="form-group"><div class="checkbox"><label for="id_leaving"><input type="checkbox" name="leaving" class="" id="id_leaving" {% if tenant.leaving %}checked{% endif %} disabled/> Sur le départ</label></div></div>
 		<h3>Fournitures</h3>
