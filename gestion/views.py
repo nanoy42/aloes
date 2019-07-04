@@ -1,6 +1,6 @@
 """Views of gestion app.""" # pylint: disable=too-many-lines
-import csv
 import os
+import xlsxwriter
 
 from dal import autocomplete
 from django.contrib import messages
@@ -95,24 +95,50 @@ def gestion_index(request):  # pylint : disable=too-many-branches
             }
         )
     else:
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="export.csv"'
-        writer = csv.writer(response)
-        writer.writerow(['Chambre (lot)', 'Locataire (email)',
-                        'Réservation', 'Réparation', 'Loyer', 'Observations'])
-        for room in res:
+        response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="export.xslx"'
+        workbook = xlsxwriter.Workbook(response, {"in_memory": True})
+        empty_format = workbook.add_format({"bg_color": "#ffeeba"})
+        temporary_format = workbook.add_format({"bg_color": "#b8daff"})
+        leaving_format = workbook.add_format({"bg_color": "#c3e6cb"})
+        worksheet = workbook.add_worksheet()
+        items = [
+            'Chambre (lot)',
+            'Locataire',
+            'Réservation',
+            'Réparation',
+            'Loyer',
+            'Observations'
+        ]
+        for i, item in enumerate(items):
+            worksheet.write(0, i, item)
+        for i, room in enumerate(res):
             if room.current_leasing:
-                tenant_text = str(room.current_leasing.tenant) + \
-                    "(" + str(room.current_leasing.tenant.email) + ")"
+                tenant_text = str(room.current_leasing.tenant)
             else:
                 tenant_text = "Pas de locataire actuel"
-
-            writer.writerow([str(room),
-                            tenant_text,
-                            str(room.next_leasing.tenant if room.next_leasing else "Pas réservée"),
-                            str(room.renovation or "Non indiqué"),
-                            str(room.rent_type or "Non indiqué"), str(room.observations)])
-        return response
+            items = [
+                str(room),
+                tenant_text,
+                str(room.next_leasing.tenant if room.next_leasing else "Pas réservée"),
+                str(room.renovation or "Non indiqué"),
+                str(room.rent_type or "Non indiqué"),
+                str(room.observations)
+            ]
+            if room.color_class == Room.EMPTY_CC:
+                cell_format = empty_format
+            elif room.color_class == Room.TEMPORARY_CC:
+                cell_format = temporary_format
+            elif room.color_class == Room.LEAVING_CC:
+                cell_format = leaving_format
+            else:
+                cell_format = None
+            for j, item in enumerate(items):
+                worksheet.write(i + 1, j, item, cell_format)
+        workbook.close()   
+    return response
 
 
 ########## Renovations ##########
@@ -1104,29 +1130,48 @@ class MapDelete(AdminRequiredMixin, ImprovedDeleteView):  # pylint: disable=too-
 ########## Other ##########
 
 @admin_required
-def export_csv(request):
-    """View to export main page information in csv."""
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="export.csv"'
-    writer = csv.writer(response)
-    writer.writerow(['Chambre (lot)', 'Locataire (email)',
-                     'Réservation', 'Réparation', 'Loyer', 'Observations'])
+def export_xls(request):
+    """View to export main page information in xlss format."""
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="export.xslx"'
+    workbook = xlsxwriter.Workbook(response, {"in_memory": True})
+    worksheet = workbook.add_worksheet()
+    items = [
+        'Chambre (lot)',
+        'Locataire (email)',
+        'Réservation',
+        'Réparation',
+        'Loyer',
+        'Observations'
+    ]
+    for i, item in enumerate(items):
+        worksheet.write(0, i, item)
     rooms = Room.objects.all()
-    for room in rooms:
+    for i, room in enumerate(rooms):
         if room.current_leasing:
             tenant_text = str(room.current_leasing.tenant) + \
                 "(" + str(room.current_leasing.tenant.email) + ")"
         else:
             tenant_text = "Pas de locataire actuel"
-
-        writer.writerow([str(room),
-                         tenant_text,
-                         str(room.next_leasing.tenant if room.next_leasing else "Pas réservée"),
-                         str(room.renovation or "Non indiqué"),
-                         str(room.rent_type or "Non indiqué"), str(room.observations)])
+        items = [
+            str(room),
+            tenant_text,
+            str(room.next_leasing.tenant if room.next_leasing else "Pas réservée"),
+            str(room.renovation or "Non indiqué"),
+            str(room.rent_type or "Non indiqué"),
+            str(room.observations)
+        ]
+        for j, item in enumerate(items):
+            worksheet.write(i + 1, j, item)
     tenants = Tenant.objects.filter(current_leasing=None)
-    for tenant in tenants:
-        writer.writerow(["Pas de chambre", str(tenant), "", "", ""])
+    last_written = i + 1
+    for i, tenant in enumerate(tenants):
+        items = ["Pas de chambre", str(tenant), "", "", ""]
+        for j, item in enumerate(items):
+            worksheet.write(i + last_written, j, item)
+    workbook.close()   
     return response
 
 ########## autocomplete ########

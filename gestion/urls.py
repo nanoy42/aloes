@@ -50,7 +50,7 @@ urlpatterns = [
     path('indexMap', views.map_index, name="indexMap"),
     path('changeRoomMap/<int:pk>',
          views.ChangeRoomMap.as_view(), name="changeRoomMap"),
-    path('exportCSV', views.export_csv, name="exportCSV"),
+    path('exportCSV', views.export_xls, name="exportCSV"),
     path(
         'emptyRoomAutocomplete',
         views.EmptyRoomAutocomplete.as_view(),
