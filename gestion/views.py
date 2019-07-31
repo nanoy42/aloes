@@ -32,20 +32,31 @@ from django.db import connection
 def gestion_index(request):  # pylint : disable=too-many-branches
     """Main page of gestion app."""
     search_form = SearchForm(request.GET or None)
+    other_tenants = Tenant.objects.none()
     if search_form.is_valid():
         res = Room.objects.select_related('current_leasing').select_related('next_leasing').select_related('renovation').select_related('rent_type')
         if search_form.cleaned_data['last_name']:
-            res = res.filter(
-                current_leasing__tenant__name__icontains=\
+            res = res.filter(Q(current_leasing__tenant__name__icontains=\
+                    search_form.cleaned_data['last_name']) | Q(next_leasing__tenant__name__icontains=\
+                    search_form.cleaned_data['last_name']))
+            other_tenants = Tenant.objects.filter(current_leasing=None).filter(next_leasing=None).filter(name__icontains=\
                     search_form.cleaned_data['last_name'])
         if search_form.cleaned_data['first_name']:
             res = res.filter(
-                current_leasing__tenant__first_name__icontains=\
+                Q(current_leasing__tenant__first_name__icontains=\
+                    search_form.cleaned_data['first_name'])|Q(next_leasing__tenant__first_name__icontains=\
+                    search_form.cleaned_data['first_name']))
+            other_tenants = Tenant.objects.filter(current_leasing=None).filter(next_leasing=None).filter(name__icontains=\
                     search_form.cleaned_data['first_name'])
         if search_form.cleaned_data['name']:
             res = res.filter(Q(current_leasing__tenant__name__icontains=\
                 search_form.cleaned_data['name']) | Q(
-                    current_leasing__tenant__first_name__icontains=search_form.cleaned_data['name']))
+                    current_leasing__tenant__first_name__icontains=\
+                        search_form.cleaned_data['name'])| Q(next_leasing__tenant__name__icontains=\
+                search_form.cleaned_data['name']) | Q(
+                    next_leasing__tenant__first_name__icontains=search_form.cleaned_data['name']))
+            other_tenants = Tenant.objects.filter(current_leasing=None).filter(next_leasing=None).filter(Q(name__icontains=\
+                    search_form.cleaned_data['name'])|Q(first_name__icontains=search_form.cleaned_data['name']))
         if search_form.cleaned_data['observations']:
             res = res.filter(observations__icontains=\
                 search_form.cleaned_data['observations'])
@@ -91,7 +102,8 @@ def gestion_index(request):  # pylint : disable=too-many-branches
                 "search_form": search_form,
                 "sidebar": True,
                 "active": "default",
-                "rooms": res
+                "rooms": res,
+                "other_tenants": other_tenants,
             }
         )
     else:
@@ -103,6 +115,7 @@ def gestion_index(request):  # pylint : disable=too-many-branches
         empty_format = workbook.add_format({"bg_color": "#ffeeba"})
         temporary_format = workbook.add_format({"bg_color": "#b8daff"})
         leaving_format = workbook.add_format({"bg_color": "#c3e6cb"})
+        other_tenant_format = workbook.add_format({"bg_color": "#f5c6cb"})
         worksheet = workbook.add_worksheet()
         items = [
             'Chambre (lot)',
@@ -137,6 +150,18 @@ def gestion_index(request):  # pylint : disable=too-many-branches
                 cell_format = None
             for j, item in enumerate(items):
                 worksheet.write(i + 1, j, item, cell_format)
+        last_written = i + 1
+        for i, tenant in enumerate(other_tenants):
+            items = [
+                "Pas de chambre",
+                str(tenant),
+                "",
+                "",
+                "",
+                ""
+            ]
+            for j, item in enumerate(items):
+                worksheet.write(i + last_written, j, item, other_tenant_format)
         workbook.close()   
     return response
 

@@ -24,8 +24,18 @@
 			<td>{{room.rent_type}}</td>
 		</tr>
 		{% endfor %}
+		{% for tenant in other_tenants %}
+		<tr class="table-danger">
+			<td>Sans chambre</td>
+			<td><a href="{% url 'gestion:tenantProfile' tenant.pk %}">{{tenant}}</a></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		{% endfor %}
 		</tbdoy>
 	</table>
 </div>
-
+{{other_tenants}}
 {% endblock %}
