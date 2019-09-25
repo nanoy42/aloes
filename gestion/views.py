@@ -115,6 +115,7 @@ def gestion_index(request):  # pylint : disable=too-many-branches
         empty_format = workbook.add_format({"bg_color": "#ffeeba"})
         temporary_format = workbook.add_format({"bg_color": "#b8daff"})
         leaving_format = workbook.add_format({"bg_color": "#c3e6cb"})
+        problem_format = workbook.add_format({"bg_color": "#f5c6cb"})
         other_tenant_format = workbook.add_format({"bg_color": "#f5c6cb"})
         worksheet = workbook.add_worksheet()
         items = [
@@ -146,6 +147,8 @@ def gestion_index(request):  # pylint : disable=too-many-branches
                 cell_format = temporary_format
             elif room.color_class == Room.LEAVING_CC:
                 cell_format = leaving_format
+            elif room.color_class == Room.PROBLEM_CC:
+                cell_format = problem_format
             else:
                 cell_format = None
             for j, item in enumerate(items):

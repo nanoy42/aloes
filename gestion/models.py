@@ -189,6 +189,7 @@ class Room(models.Model):
     EMPTY_CC = "table-warning"
     TEMPORARY_CC = "table-primary"
     LEAVING_CC = "table-success"
+    PROBLEM_CC = "table-danger"
     NONE_CC = ""
 
     class Meta:
@@ -267,7 +268,9 @@ class Room(models.Model):
     def color_class(self):
         """Return the appropriate color class."""
         if self.current_leasing:
-            if self.current_leasing.tenant.leaving:
+            if self.current_leasing.issue:
+                return self.PROBLEM_CC
+            elif self.current_leasing.tenant.leaving:
                 return self.LEAVING_CC
             elif self.current_leasing.tenant.temporary:
                 return self.TEMPORARY_CC
