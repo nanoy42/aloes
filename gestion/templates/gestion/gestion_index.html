@@ -13,7 +13,7 @@
 				<th>Loyer</th>
 			</tr>
 		</thead>
-		<tbdoy>
+		<tbody>
 		{% for room in rooms %}
 		<tr id="room-{{room.pk}}" class="{{room.color_class}}">
 			<td><a href="{% url 'gestion:roomProfile' room.pk %}">{{room}} (Lot {{room.lot}})</a></td>
@@ -34,8 +34,7 @@
 			<td></td>
 		</tr>
 		{% endfor %}
-		</tbdoy>
+		</tbody>
 	</table>
 </div>
-{{other_tenants}}
 {% endblock %}

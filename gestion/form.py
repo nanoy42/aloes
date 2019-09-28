@@ -74,7 +74,7 @@ class SearchForm(forms.Form):
         required=False
     )
     gender = forms.ChoiceField(choices=GENDER_CHOICES, label="Sexe")
-    school = forms.ModelChoiceField(queryset=School.objects.all(), label="Ecole", required=False)
+    school = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'École'}), label="" , required=False)
     empty_rooms_only = forms.BooleanField(
         initial=False,
         label="Chambres vides seules",

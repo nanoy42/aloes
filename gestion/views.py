@@ -70,7 +70,7 @@ def gestion_index(request):  # pylint : disable=too-many-branches
                 current_leasing__tenant__gender=search_form.cleaned_data['gender'])
         if search_form.cleaned_data['school']:
             res = res.filter(
-                current_leasing__tenant__school=search_form.cleaned_data['school'])
+                current_leasing__tenant__school__name__icontains=search_form.cleaned_data['school'])
         if search_form.cleaned_data['empty_rooms_only']:
             res = res.filter(current_leasing__tenant=None)
         if search_form.cleaned_data['exclude_temporary']:
