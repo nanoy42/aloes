@@ -44,7 +44,9 @@ def rent_contract(request, pk):
         gender = "Mme."
         born_accorded = "née"
     floor = str(room)[1]
-    if floor == "1":
+    if floor == "0":
+        floor = "Rez de chaussée"
+    elif floor == "1":
         floor += "er étage"
     else:
         floor += "ieme étage"
