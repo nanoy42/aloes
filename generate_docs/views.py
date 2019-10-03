@@ -285,7 +285,11 @@ def mailing_labels(request):
         messages.success(request, "Demande annulée")
         return redirect(request.POST.get('cancel') or "home")
     if form.is_valid():
-        csv_reader = csv.reader(request.FILES['file'].read().decode("utf8").split('\n'))
+        try:
+            csv_reader = csv.reader(request.FILES['file'].read().decode("utf8").split('\n'))
+        except UnicodeDecodeError:
+            messages.error(request, "Le fichier csv n'a pas pu être décodé car l'encodage n'est pas de l'UTF-8.")
+            return redirect(reverse('generate_docs:mailingLabels'))
         tenant_doubles = pair(csv_reader)
         template = ODTGenerator(
             'generate_docs/mailing_labels.odt',
