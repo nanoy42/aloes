@@ -144,10 +144,11 @@ def lease_end_attestation(request, pk):
     """
     Render lease_end_attestation.odt
 
-    pk : primary key of a tenant
+    pk : primary key of a leasing
     """
-    tenant = get_object_or_404(Tenant, pk=pk)
-    if tenant.date_of_departure:
+    leasing = get_object_or_404(Leasing, pk=pk)
+    if leasing.date_of_departure:
+        tenant = leasing.tenant
         template = ODTGenerator(
             'generate_docs/lease_end_attestation.odt',
             ('attestationFinDeBail' + tenant.first_name + tenant.name + '.odt').replace(" ", "")
@@ -159,6 +160,7 @@ def lease_end_attestation(request, pk):
             gender = "M."
             born_accorded = "né"
         return template.render({
+            'leasing': leasing,
             'now':datetime.now(),
             'tenant': tenant,
             'user': request.user,
