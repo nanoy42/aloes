@@ -1,6 +1,7 @@
 """Views of generate_docs app."""
 from datetime import datetime
 import csv
+import openpyxl
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
@@ -143,10 +144,11 @@ def lease_end_attestation(request, pk):
     """
     Render lease_end_attestation.odt
 
-    pk : primary key of a tenant
+    pk : primary key of a leasing
     """
-    tenant = get_object_or_404(Tenant, pk=pk)
-    if tenant.date_of_departure:
+    leasing = get_object_or_404(Leasing, pk=pk)
+    if leasing.date_of_departure:
+        tenant = leasing.tenant
         template = ODTGenerator(
             'generate_docs/lease_end_attestation.odt',
             ('attestationFinDeBail' + tenant.first_name + tenant.name + '.odt').replace(" ", "")
@@ -158,6 +160,7 @@ def lease_end_attestation(request, pk):
             gender = "M."
             born_accorded = "né"
         return template.render({
+            'leasing': leasing,
             'now':datetime.now(),
             'tenant': tenant,
             'user': request.user,
@@ -285,12 +288,16 @@ def mailing_labels(request):
         messages.success(request, "Demande annulée")
         return redirect(request.POST.get('cancel') or "home")
     if form.is_valid():
-        try:
-            csv_reader = csv.reader(request.FILES['file'].read().decode("utf8").split('\n'))
-        except UnicodeDecodeError:
-            messages.error(request, "Le fichier csv n'a pas pu être décodé car l'encodage n'est pas de l'UTF-8.")
-            return redirect(reverse('generate_docs:mailingLabels'))
-        tenant_doubles = pair(csv_reader)
+        excel_file = request.FILES["file"]
+        wb = openpyxl.load_workbook(excel_file)
+        ws = wb.get_sheet_by_name('Sheet1')
+        tenant_doubles = []
+        i = 1
+        while ws["A" + str(i)].value:
+            print(ws["A" + str(i)].value)
+            tenant_doubles.append((ws["A" + str(i)].value, ws["B" + str(i)].value))
+            i += 1
+        tenant_doubles = pair(iter(tenant_doubles))
         template = ODTGenerator(
             'generate_docs/mailing_labels.odt',
             'etiquettes_courrier.odt'
